@@ -1,0 +1,18 @@
+{
+  "name": "@ilc/shared",
+  "version": "1.0.0",
+  "description": "Shared types, schemas, and utilities for Island Living Digital",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/utils/index.test.js"
+  },
+  "dependencies": {
+    "island-living-digital": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.5"
+  }
+}

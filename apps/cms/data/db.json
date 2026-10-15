@@ -1,0 +1,447 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-001",
+      "email": "admin@islandlivingchannel.tv",
+      "password_hash": "admin123",
+      "display_name": "ILC Editorial Lead",
+      "avatar_url": null,
+      "account_status": "active",
+      "role": "super_admin",
+      "created_at": "2026-09-15T18:38:19.600Z",
+      "updated_at": "2026-09-15T18:38:19.606Z"
+    },
+    {
+      "id": "usr-member-001",
+      "email": "member@islandlivingchannel.tv",
+      "password_hash": "member123",
+      "display_name": "Maria Santos",
+      "avatar_url": null,
+      "account_status": "active",
+      "role": "member",
+      "created_at": "2026-10-10T18:38:19.606Z",
+      "updated_at": "2026-10-10T18:38:19.606Z"
+    },
+    {
+      "id": "usr-1792090185171-40",
+      "email": "tourist_1792090185043@islandliving.ph",
+      "password_hash": "password123",
+      "display_name": "Isla Explorer",
+      "avatar_url": null,
+      "account_status": "active",
+      "role": "member",
+      "created_at": "2026-10-15T18:49:45.171Z",
+      "updated_at": "2026-10-15T18:49:45.171Z"
+    }
+  ],
+  "membership_cards": [
+    {
+      "id": "card-001",
+      "user_id": "usr-member-001",
+      "public_membership_code": "ILC-7B9A-24E8",
+      "status": "active",
+      "created_at": "2026-10-10T18:38:19.606Z"
+    },
+    {
+      "id": "card-1792090185172",
+      "user_id": "usr-1792090185171-40",
+      "public_membership_code": "ILC-4J96-4WU5",
+      "status": "active",
+      "created_at": "2026-10-15T18:49:45.171Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "c1",
+      "name": "Islands & Beaches",
+      "slug": "islands-beaches",
+      "description": "Beaches and coastal escapes"
+    },
+    {
+      "id": "c2",
+      "name": "Food & Dining",
+      "slug": "food-dining",
+      "description": "Island delicacies and fresh seafood"
+    },
+    {
+      "id": "c3",
+      "name": "Resorts & Stays",
+      "slug": "resorts-stays",
+      "description": "Eco-luxury villas and stays"
+    },
+    {
+      "id": "c4",
+      "name": "Culture & Festivals",
+      "slug": "culture-festivals",
+      "description": "Local fiestas and traditions"
+    },
+    {
+      "id": "c5",
+      "name": "Adventure & Diving",
+      "slug": "adventure-diving",
+      "description": "Surfing, reefs, and hikes"
+    },
+    {
+      "id": "c6",
+      "name": "Wellness & Nature",
+      "slug": "wellness-nature",
+      "description": "Restorative island sanctuaries"
+    }
+  ],
+  "videos": [
+    {
+      "title": "Coron: Hidden Twin Lagoons 4K",
+      "slug": "coron-hidden-twin-lagoons-4k-602",
+      "description": "Explore the freshwater and saltwater thermal thermoclines of Coron Island.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1200",
+      "duration_seconds": null,
+      "status": "unpublished",
+      "is_featured": false,
+      "published_at": "2026-10-15T18:49:45.540Z",
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Islands & Beaches"
+      ],
+      "tags": [
+        "Coron",
+        "Palawan",
+        "Lagoons"
+      ],
+      "id": "vid-1792090185540",
+      "created_at": "2026-10-15T18:49:45.540Z",
+      "updated_at": "2026-10-15T18:49:45.747Z"
+    },
+    {
+      "id": "vid-001",
+      "title": "El Nido: Secrets of the Bacuit Archipelago",
+      "slug": "el-nido-secrets-bacuit-archipelago",
+      "description": "Glide through limestone karst cliffs, hidden lagoons, and turquoise waters in Palawan’s premier marine reserve. Experience the tranquil Big Lagoon and Secret Beach in cinematic high definition.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1200&auto=format&fit=crop",
+      "duration_seconds": 596,
+      "status": "published",
+      "is_featured": true,
+      "published_at": "2026-10-13T18:38:19.606Z",
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Islands & Beaches"
+      ],
+      "tags": [
+        "Palawan",
+        "Lagoon",
+        "Snorkeling"
+      ],
+      "created_at": "2026-10-12T18:38:19.606Z",
+      "updated_at": "2026-10-13T18:38:19.606Z"
+    },
+    {
+      "id": "vid-002",
+      "title": "Siargao Sunrise: Cloud 9 & Beyond",
+      "slug": "siargao-sunrise-cloud-9-and-beyond",
+      "description": "Catch the world-renowned swell at Cloud 9, explore the serene coconut palm road at sunrise, and discover the tidal rock pools of Magpupungko.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop",
+      "duration_seconds": 653,
+      "status": "published",
+      "is_featured": true,
+      "published_at": "2026-10-14T18:38:19.606Z",
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Adventure & Diving"
+      ],
+      "tags": [
+        "Siargao",
+        "Surfing",
+        "Sunrise"
+      ],
+      "created_at": "2026-10-13T18:38:19.606Z",
+      "updated_at": "2026-10-14T18:38:19.606Z"
+    },
+    {
+      "id": "vid-003",
+      "title": "Cebu Seafood & Heritage Trail",
+      "slug": "cebu-seafood-and-heritage-trail",
+      "description": "From historic Fort San Pedro to the freshest catch in Bantayan Island, taste the authentic coastal flavors and rich culinary heritage of Cebu.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200&auto=format&fit=crop",
+      "duration_seconds": 480,
+      "status": "published",
+      "is_featured": false,
+      "published_at": "2026-10-11T18:38:19.606Z",
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Food & Dining"
+      ],
+      "tags": [
+        "Cebu",
+        "Culinary",
+        "Seafood"
+      ],
+      "created_at": "2026-10-10T18:38:19.606Z",
+      "updated_at": "2026-10-11T18:38:19.607Z"
+    },
+    {
+      "id": "vid-004",
+      "title": "Batanes: Winds of the Northern Isles",
+      "slug": "batanes-winds-northern-isles",
+      "description": "Journey across the breathtaking rolling hills of Marlboro, traditional Ivatan stone houses, and the towering lighthouses of Basco.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop",
+      "duration_seconds": 542,
+      "status": "published",
+      "is_featured": false,
+      "published_at": "2026-10-09T18:38:19.607Z",
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Culture & Festivals"
+      ],
+      "tags": [
+        "Batanes",
+        "Ivatan",
+        "Scenery"
+      ],
+      "created_at": "2026-10-08T18:38:19.607Z",
+      "updated_at": "2026-10-09T18:38:19.607Z"
+    },
+    {
+      "id": "vid-005",
+      "title": "Bohol: Beyond the Chocolate Hills (Draft)",
+      "slug": "bohol-beyond-chocolate-hills-draft",
+      "description": "Editorial preview covering Panglao dive spots, the Loboc river cruise, and tarsier sanctuary conservation.",
+      "media_path": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+      "thumbnail_path": "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1200&auto=format&fit=crop",
+      "duration_seconds": 360,
+      "status": "draft",
+      "is_featured": false,
+      "published_at": null,
+      "created_by": "usr-admin-001",
+      "categories": [
+        "Wellness & Nature"
+      ],
+      "tags": [
+        "Bohol",
+        "Nature"
+      ],
+      "created_at": "2026-10-15T18:36:39.607Z",
+      "updated_at": "2026-10-15T18:36:39.607Z"
+    }
+  ],
+  "welcome_gifts": [
+    {
+      "id": "gift-001",
+      "title": "Chilled Island Coconut Welcome Drink",
+      "description": "Enjoy a fresh, chilled whole young coconut upon check-in or arrival at any participating ILC partner hub across Boracay, El Nido, or Siargao.",
+      "image_path": "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?q=80&w=800&auto=format&fit=crop",
+      "is_active": true,
+      "new_member_only": true,
+      "starts_at": "2026-09-15T18:38:19.607Z",
+      "ends_at": "2027-09-15T18:38:19.607Z",
+      "validity_days": 30,
+      "redemption_instructions": "Present this digital pass and voucher QR code to the service counter at any verified ILC partner beach club or ferry lounge.",
+      "created_by": "usr-admin-001",
+      "created_at": "2026-09-15T18:38:19.607Z",
+      "updated_at": "2026-09-15T18:38:19.607Z"
+    },
+    {
+      "id": "gift-002",
+      "title": "PHP 500 Sunset Cruise Voucher",
+      "description": "Exclusive member privilege: PHP 500 discount on your sunset catamaran or bangka cruise booking through our island partner network.",
+      "image_path": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
+      "is_active": true,
+      "new_member_only": true,
+      "starts_at": "2026-10-05T18:38:19.607Z",
+      "ends_at": "2027-01-13T18:38:19.607Z",
+      "validity_days": 45,
+      "redemption_instructions": "Quote your voucher code when booking via the Otamigo concierge or present in person at the tour desk.",
+      "created_by": "usr-admin-001",
+      "created_at": "2026-10-05T18:38:19.607Z",
+      "updated_at": "2026-10-05T18:38:19.607Z"
+    }
+  ],
+  "member_gifts": [
+    {
+      "id": "mg-001",
+      "user_id": "usr-member-001",
+      "gift_id": "gift-001",
+      "issued_at": "2026-10-10T18:38:19.607Z",
+      "expires_at": "2026-11-09T18:38:19.607Z",
+      "status": "active",
+      "redeemed_at": null,
+      "redemption_code": "GIFT-7K4M9Q"
+    },
+    {
+      "id": "mg-1792090185173-928",
+      "user_id": "usr-1792090185171-40",
+      "gift_id": "gift-001",
+      "issued_at": "2026-10-15T18:49:45.173Z",
+      "expires_at": "2026-11-14T18:49:45.173Z",
+      "status": "active",
+      "redeemed_at": null,
+      "redemption_code": "GIFT-96ZEUR"
+    },
+    {
+      "id": "mg-1792090185173-150",
+      "user_id": "usr-1792090185171-40",
+      "gift_id": "gift-002",
+      "issued_at": "2026-10-15T18:49:45.173Z",
+      "expires_at": "2026-11-29T18:49:45.173Z",
+      "status": "active",
+      "redeemed_at": null,
+      "redemption_code": "GIFT-SAWBQ9"
+    }
+  ],
+  "notification_campaigns": [
+    {
+      "id": "notif-001",
+      "title": "Boracay Music & Arts Weekend",
+      "message": "Join us live this Saturday at Station 2 for the annual sunset acoustic sessions!",
+      "deep_link": "ilc://vod/siargao-sunrise-cloud-9-and-beyond",
+      "status": "submitted",
+      "scheduled_at": null,
+      "target_audience": "all",
+      "provider_message_id": "sim_provider_msg_98124",
+      "created_by": "usr-admin-001",
+      "created_at": "2026-10-13T18:38:19.607Z",
+      "updated_at": "2026-10-13T18:38:19.607Z"
+    }
+  ],
+  "campaign_locations": [
+    {
+      "id": "loc-001",
+      "name": "Boracay Station 2 Coastal Hub",
+      "description": "Main beachfront promenade and partner lounge in Boracay Island",
+      "latitude": 11.9592,
+      "longitude": 121.9272,
+      "radius_meters": 800,
+      "is_active": true,
+      "associated_campaign_id": "notif-001",
+      "created_at": "2026-09-30T18:38:19.607Z",
+      "updated_at": "2026-09-30T18:38:19.607Z"
+    },
+    {
+      "id": "loc-002",
+      "name": "El Nido Town Marine Terminal",
+      "description": "Island hopping departure dock and tourist registration center",
+      "latitude": 11.1818,
+      "longitude": 119.3917,
+      "radius_meters": 1000,
+      "is_active": true,
+      "associated_campaign_id": null,
+      "created_at": "2026-09-30T18:38:19.607Z",
+      "updated_at": "2026-09-30T18:38:19.607Z"
+    },
+    {
+      "id": "loc-003",
+      "name": "Siargao General Luna Tourism Hub",
+      "description": "Cloud 9 boardwalk entry and partner cafe cluster",
+      "latitude": 9.7877,
+      "longitude": 126.1558,
+      "radius_meters": 1200,
+      "is_active": true,
+      "associated_campaign_id": null,
+      "created_at": "2026-09-30T18:38:19.607Z",
+      "updated_at": "2026-09-30T18:38:19.607Z"
+    },
+    {
+      "id": "loc-004",
+      "name": "Mactan Cebu International Airport Lounge",
+      "description": "Transit terminal partner welcome booth",
+      "latitude": 10.3075,
+      "longitude": 123.9794,
+      "radius_meters": 500,
+      "is_active": true,
+      "associated_campaign_id": null,
+      "created_at": "2026-09-30T18:38:19.607Z",
+      "updated_at": "2026-09-30T18:38:19.607Z"
+    }
+  ],
+  "feedback": [
+    {
+      "id": "fb-1792090185930",
+      "user_id": "usr-1792090185171-40",
+      "user_display_name": "Isla Explorer",
+      "merchant_name": "Apo Reef Island Divers",
+      "rating": 5,
+      "comment": "Pristine corals and exceptional dive guides!",
+      "status": "reviewed",
+      "created_at": "2026-10-15T18:49:45.930Z",
+      "updated_at": "2026-10-15T18:49:46.068Z",
+      "admin_notes": "Partner verified with local marine reservation desk."
+    },
+    {
+      "id": "fb-001",
+      "user_id": "usr-member-001",
+      "user_display_name": "Maria Santos",
+      "merchant_name": "Sea Breeze Grill Boracay",
+      "rating": 5,
+      "comment": "Fresh grilled seafood and warm service! Redeemed our welcome drink easily.",
+      "status": "reviewed",
+      "admin_notes": "Partner verified redemption smoothly.",
+      "created_at": "2026-10-12T18:38:19.607Z",
+      "updated_at": "2026-10-13T18:38:19.607Z"
+    }
+  ],
+  "settings": {
+    "brand_name": "Island Living Channel",
+    "logo_url": "https://www.islandlivingchannel.tv/wp-content/uploads/2022/02/ff.png",
+    "youtube_live_stream_id": "live_stream_ilc",
+    "youtube_channel_url": "https://www.youtube.com/@islandlivingchannel",
+    "otamigo_booking_base_url": "https://otamigo.com",
+    "otamigo_affiliate_id": "ilc_official",
+    "push_provider_enabled": false
+  },
+  "audit_events": [
+    {
+      "id": "aud-1792090186068-907",
+      "actor_id": "usr-admin-001",
+      "actor_email": "admin@islandlivingchannel.tv",
+      "action": "update_feedback_status",
+      "entity_type": "feedback",
+      "entity_id": "fb-1792090185930",
+      "metadata": {
+        "status": "reviewed",
+        "adminNotes": "Partner verified with local marine reservation desk."
+      },
+      "created_at": "2026-10-15T18:49:46.068Z"
+    },
+    {
+      "id": "aud-1792090185747-443",
+      "actor_id": "usr-admin-001",
+      "actor_email": "admin@islandlivingchannel.tv",
+      "action": "update_video",
+      "entity_type": "video",
+      "entity_id": "vid-1792090185540",
+      "metadata": {
+        "status": "unpublished"
+      },
+      "created_at": "2026-10-15T18:49:45.747Z"
+    },
+    {
+      "id": "aud-1792090185540-267",
+      "actor_id": "usr-admin-001",
+      "actor_email": "admin@islandlivingchannel.tv",
+      "action": "create_video",
+      "entity_type": "video",
+      "entity_id": "vid-1792090185540",
+      "metadata": {
+        "title": "Coron: Hidden Twin Lagoons 4K",
+        "status": "published"
+      },
+      "created_at": "2026-10-15T18:49:45.540Z"
+    },
+    {
+      "id": "aud-001",
+      "actor_id": "usr-admin-001",
+      "actor_email": "admin@islandlivingchannel.tv",
+      "action": "publish_video",
+      "entity_type": "video",
+      "entity_id": "vid-001",
+      "metadata": {
+        "title": "El Nido: Secrets of the Bacuit Archipelago"
+      },
+      "created_at": "2026-10-13T18:38:19.607Z"
+    }
+  ],
+  "analytics_events": []
+}

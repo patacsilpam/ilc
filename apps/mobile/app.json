@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Island Living",
+    "slug": "island-living",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/ilc-logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/brand/ilc-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#123B52"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.martinsoft.islandliving"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/ilc-logo.png",
+        "backgroundColor": "#123B52"
+      },
+      "package": "com.martinsoft.islandliving"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "island-living-digital"
+      }
+    }
+  }
+}
