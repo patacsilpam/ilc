@@ -184,3 +184,41 @@ export interface AuthSession {
   token: string;
   membership?: MembershipCard | null;
 }
+
+export type YouTubeTab = 'live' | 'videos' | 'shorts';
+
+export interface YouTubeVideoItem {
+  id: string;
+  title: string;
+  description: string;
+  publishedAt: string;
+  thumbnailUrl: string;
+  durationSeconds?: number | null;
+  durationFormatted?: string;
+  isShort?: boolean;
+  videoUrl: string;
+  embedUrl: string;
+}
+
+export interface YouTubeLiveStatus {
+  isLive: boolean;
+  videoId: string | null;
+  title: string | null;
+  description: string | null;
+  scheduledStartTime?: string | null;
+  actualStartTime?: string | null;
+  thumbnailUrl?: string | null;
+  embedUrl?: string | null;
+  channelTitle?: string;
+  channelId?: string;
+}
+
+export interface YouTubeWatchResponse {
+  live: YouTubeLiveStatus;
+  videos: YouTubeVideoItem[];
+  shorts: YouTubeVideoItem[];
+  nextPageToken?: string | null;
+  source: 'api' | 'feed_fallback';
+  channelId: string;
+  channelTitle: string;
+}
