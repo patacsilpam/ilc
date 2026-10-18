@@ -1,259 +1,264 @@
 import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
-import { Video, VideoCategory, BRAND_COLORS } from '@ilc/shared';
-import { VideoCard } from '../components/VideoCard';
+  FieldLabel,
+  H1,
+  H2,
+  H3,
+  MuteText,
+  PromoBox,
+  ProtoButton,
+  ProtoInput,
+  ProtoSelect,
+} from '../components/PrototypePrimitives';
+import {
+  HUBS,
+  MERCHANTS,
+  PROTOTYPE_THEMES,
+  PrototypeFeedback,
+  ThemeMode,
+  computeMemberId,
+} from '../constants/prototypeTheme';
 
-interface VodScreenProps {
-  videos: Video[];
-  categories: VideoCategory[];
-  onSelectVideo: (video: Video) => void;
-  isRefreshing?: boolean;
-  onRefresh?: () => void;
+interface MoreScreenProps {
+  theme: ThemeMode;
+  onToggleTheme: () => void;
+  isRegistered: boolean;
+  memberName: string;
+  memberEmail: string;
+  onOpenRegister: () => void;
+  onSignOut: () => void;
+  rating: number;
+  onChangeRating: (rating: number) => void;
+  hub: string;
+  onChangeHub: (hub: string) => void;
+  feedbackList: PrototypeFeedback[];
+  onSubmitFeedback: (target: string, rating: number, comment: string) => void;
+  onSimulateGeo: () => void;
+  onPushToast: (title: string, msg: string) => void;
 }
 
-export const VodScreen: React.FC<VodScreenProps> = ({
-  videos,
-  categories,
-  onSelectVideo,
-  isRefreshing = false,
-  onRefresh,
-}) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+const RATING_OPTIONS = [
+  { label: 'The ILC app', value: 'The ILC app' },
+  ...MERCHANTS.map((m) => ({ label: m.n, value: m.n })),
+];
 
-  const filteredVideos = videos.filter((v) => {
-    if (selectedCategory !== 'All' && !v.categories.includes(selectedCategory)) {
-      return false;
+const HUB_OPTIONS = Object.keys(HUBS).map((h) => ({ label: h, value: h }));
+
+export const VodScreen: React.FC<MoreScreenProps> = ({
+  theme,
+  onToggleTheme,
+  isRegistered,
+  memberName,
+  memberEmail,
+  onOpenRegister,
+  onSignOut,
+  rating,
+  onChangeRating,
+  hub,
+  onChangeHub,
+  feedbackList,
+  onSubmitFeedback,
+  onSimulateGeo,
+  onPushToast,
+}) => {
+  const t = PROTOTYPE_THEMES[theme];
+  const [target, setTarget] = useState('The ILC app');
+  const [comment, setComment] = useState('');
+
+  const handleSendFeedback = () => {
+    if (!rating) {
+      onPushToast('Pick a rating', 'Tap a star before sending.');
+      return;
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = v.title.toLowerCase().includes(q);
-      const matchDesc = v.description.toLowerCase().includes(q);
-      const matchTag = v.tags.some((t) => t.toLowerCase().includes(q));
-      if (!matchTitle && !matchDesc && !matchTag) return false;
-    }
-    return true;
-  });
+    onSubmitFeedback(target, rating, comment.trim() || '(no comment)');
+    setComment('');
+  };
 
   return (
-    <View style={styles.container}>
-      {/* SEARCH BAR */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            placeholder="Search islands, beaches, surfing, food..."
-            placeholderTextColor={BRAND_COLORS.mutedText}
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            clearButtonMode="while-editing"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Text style={styles.clearIcon}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+    <View>
+      <H1 theme={theme}>More</H1>
 
-      {/* CATEGORY CHIPS */}
-      <View style={styles.categoryContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-          <TouchableOpacity
-            onPress={() => setSelectedCategory('All')}
-            style={[styles.chip, selectedCategory === 'All' && styles.chipActive]}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.chipText, selectedCategory === 'All' && styles.chipTextActive]}>
-              All Stories
-            </Text>
-          </TouchableOpacity>
-
-          {categories.map((cat) => {
-            const isActive = selectedCategory === cat.name;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => setSelectedCategory(cat.name)}
-                style={[styles.chip, isActive && styles.chipActive]}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* COUNT BAR */}
-      <View style={styles.countBar}>
-        <Text style={styles.countText}>
-          {filteredVideos.length} {filteredVideos.length === 1 ? 'Feature' : 'Features'} Found
-        </Text>
-        {selectedCategory !== 'All' && (
-          <TouchableOpacity onPress={() => setSelectedCategory('All')}>
-            <Text style={styles.resetText}>Reset filter</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* VIDEOS LIST */}
-      <ScrollView
-        style={styles.feedList}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
-      >
-        {filteredVideos.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={{ fontSize: 32, marginBottom: 8 }}>🏝️</Text>
-            <Text style={styles.emptyTitle}>No Stories Found</Text>
-            <Text style={styles.emptySubtitle}>
-              Try searching for different keywords or explore other island categories.
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedCategory('All');
-                setSearchQuery('');
-              }}
-              style={styles.resetButton}
-            >
-              <Text style={styles.resetButtonText}>View All Videos</Text>
-            </TouchableOpacity>
+      {/* Member Account Section */}
+      <PromoBox theme={theme} style={{ marginTop: 14, marginBottom: 4 }}>
+        {isRegistered ? (
+          <View style={styles.accountRow}>
+            <View style={{ flex: 1 }}>
+              <H3 theme={theme}>{memberName}</H3>
+              <MuteText theme={theme}>
+                {memberEmail} · {computeMemberId(memberEmail)}
+              </MuteText>
+            </View>
+            <ProtoButton
+              theme={theme}
+              alt
+              label="Sign out"
+              onPress={onSignOut}
+            />
           </View>
         ) : (
-          filteredVideos.map((video) => (
-            <VideoCard key={video.id} video={video} onPress={onSelectVideo} />
-          ))
+          <View>
+            <H3 theme={theme}>Island Living Member Pass</H3>
+            <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 10 }}>
+              Sign in or create a free account to unlock your QR card and
+              welcome gift.
+            </MuteText>
+            <ProtoButton
+              theme={theme}
+              label="Create free account"
+              full
+              onPress={onOpenRegister}
+            />
+          </View>
         )}
-      </ScrollView>
+      </PromoBox>
+
+      {/* Rate Your Experience Section */}
+      <H2 theme={theme}>Rate your experience</H2>
+      <FieldLabel theme={theme}>What are you rating?</FieldLabel>
+      <ProtoSelect
+        theme={theme}
+        options={RATING_OPTIONS}
+        value={target}
+        onChange={setTarget}
+      />
+
+      <View style={styles.starsRow}>
+        {[1, 2, 3, 4, 5].map((n) => {
+          const isOn = rating >= n;
+          return (
+            <TouchableOpacity
+              key={n}
+              style={styles.starBtn}
+              onPress={() => onChangeRating(n)}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.starText,
+                  { color: isOn ? '#F2A65A' : t.line },
+                ]}
+              >
+                ★
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <ProtoInput
+        theme={theme}
+        value={comment}
+        onChangeText={setComment}
+        placeholder="Tell us what worked and what didn’t"
+        multiline
+        numberOfLines={3}
+      />
+
+      <ProtoButton
+        theme={theme}
+        label="Send feedback"
+        full
+        onPress={handleSendFeedback}
+      />
+
+      {feedbackList.length > 0 && (
+        <View style={{ marginTop: 14 }}>
+          {feedbackList.slice(0, 3).map((f, idx) => (
+            <View
+              key={idx}
+              style={[styles.fbRow, { borderBottomColor: t.line }]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.fbTarget, { color: t.ink }]}>{f.w}</Text>
+                <MuteText theme={theme}>{f.t}</MuteText>
+              </View>
+              <Text style={[styles.fbStars, { color: t.hib }]}>
+                {'★'.repeat(f.r)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Arrival Hub Perks & App Preferences */}
+      <H2 theme={theme}>Arrival hub alerts</H2>
+      <FieldLabel theme={theme}>Current travel gateway</FieldLabel>
+      <ProtoSelect
+        theme={theme}
+        options={HUB_OPTIONS}
+        value={hub}
+        onChange={onChangeHub}
+      />
+
+      <ProtoButton
+        theme={theme}
+        alt
+        full
+        label="Check nearby partner perks"
+        onPress={onSimulateGeo}
+      />
+
+      <View style={[styles.themeRow, { borderTopColor: t.line }]}>
+        <View>
+          <Text style={[styles.fbTarget, { color: t.ink }]}>Appearance</Text>
+          <MuteText theme={theme}>
+            {theme === 'dark' ? 'Dark forest theme' : 'Light island theme'}
+          </MuteText>
+        </View>
+        <ProtoButton
+          theme={theme}
+          alt
+          label={theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'}
+          onPress={onToggleTheme}
+        />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BRAND_COLORS.warmIvory,
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: '#ffffff',
-  },
-  searchBox: {
+  accountRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
-  },
-  searchIcon: {
-    marginRight: 8,
-    fontSize: 14,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: BRAND_COLORS.ink,
-    height: '100%',
-  },
-  clearIcon: {
-    fontSize: 14,
-    color: BRAND_COLORS.mutedText,
-    padding: 4,
-  },
-  categoryContainer: {
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_COLORS.border,
-    paddingVertical: 10,
-  },
-  categoryScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: BRAND_COLORS.border,
-  },
-  chipActive: {
-    backgroundColor: BRAND_COLORS.islandTeal,
-    borderColor: BRAND_COLORS.islandTeal,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: BRAND_COLORS.mutedText,
-  },
-  chipTextActive: {
-    color: '#ffffff',
-  },
-  countBar: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    gap: 10,
   },
-  countText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: BRAND_COLORS.mutedText,
-    textTransform: 'uppercase',
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  starBtn: {
+    paddingHorizontal: 2,
+  },
+  starText: {
+    fontSize: 28,
+  },
+  fbRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  fbTarget: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  fbStars: {
+    fontSize: 13,
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
-  resetText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: BRAND_COLORS.coralAccent,
-  },
-  feedList: {
-    flex: 1,
-  },
-  emptyState: {
-    padding: 40,
+  themeRow: {
+    marginTop: 22,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: BRAND_COLORS.deepOcean,
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: BRAND_COLORS.mutedText,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-  resetButton: {
-    backgroundColor: BRAND_COLORS.islandTeal,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  resetButtonText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    justifyContent: 'space-between',
+    gap: 10,
   },
 });

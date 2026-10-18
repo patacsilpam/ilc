@@ -9,20 +9,19 @@ https://www.islandlivingchannel.tv/wp-content/uploads/2022/02/ff.png
 
 If available, download and store a local optimized copy in the project's asset directory. Preserve aspect ratio and provide a sensible fallback if retrieval fails. Do not make app startup depend on a remote logo URL.
 
-## 3. Suggested palette
-Treat these as provisional until ILC's official brand guide is available:
-- Deep ocean: `#123B52`
-- Island teal: `#1F7A78`
-- Sky blue: `#6DB7E8`
-- Warm sand: `#F1D39A`
-- Coral accent: `#E47E63`
-- Warm ivory: `#FAF7F0`
-- Ink: `#20272B`
-- Muted text: `#66747A`
-- Surface: `#FFFFFF`
-- Border: `#E5E8E7`
+## 3. Official Logo-Derived Palette
+Derived directly from the Island Living Channel logo (`ISLAND LIVING` in deep palm green, `CHANNEL` in broadcast red, rising tropical sun in golden yellow on a crisp white surface):
+- Palm Green (Primary Brand): `#0E5A2A`
+- Deep Forest (Dark Pass / Contrast Surface): `#083819`
+- Channel Red (Broadcast / Live / Primary Accent): `#E11D24`
+- Sun Gold (Rising Sun Highlight / Pass Trim): `#EAB308` / `#FACC15`
+- Clean Surface (Header & Cards): `#FFFFFF`
+- Editorial Canvas: `#F6F7F5`
+- Ink (Primary Text): `#141F18`
+- Muted Text (Metadata & Captions): `#57635B`
+- Hairline Border: `#E2E7E3`
 
-Use a restrained palette. Do not use every color in every view. Ensure WCAG-appropriate text contrast, particularly over photography.
+Use a restrained, high-contrast editorial palette. Always place the primary ILC logo on a clean white (`#FFFFFF`) surface so its green/red typography and white keyline remain sharp. Never use emojis as interface icons.
 
 ## 4. Typography
 Use a highly readable sans-serif such as Inter or a platform-native equivalent. Create a consistent type scale:

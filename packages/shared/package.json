@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Shared types, schemas, and utilities for Island Living Digital",
   "main": "dist/index.js",
+  "react-native": "src/index.ts",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
