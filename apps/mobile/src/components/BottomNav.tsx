@@ -1,37 +1,78 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { BRAND_COLORS } from '@ilc/shared';
+import {
+  TABS,
+  PrototypeTab,
+  ThemeMode,
+  PROTOTYPE_THEMES,
+} from '../constants/prototypeTheme';
+import { PrototypeTabIcon } from './PrototypeArtwork';
 
-export type TabId = 'home' | 'vod' | 'live' | 'travel' | 'profile';
+export type TabType = PrototypeTab;
 
 interface BottomNavProps {
-  currentTab: TabId;
-  onSelectTab: (tab: TabId) => void;
+  currentTab: PrototypeTab;
+  onSelectTab: (tab: PrototypeTab) => void;
+  theme?: ThemeMode;
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab }) => {
-  const tabs: Array<{ id: TabId; label: string; icon: string }> = [
-    { id: 'home', label: 'Island', icon: '🏝️' },
-    { id: 'vod', label: 'VOD', icon: '🎬' },
-    { id: 'live', label: 'Live TV', icon: '📺' },
-    { id: 'travel', label: 'Travel', icon: '✈️' },
-    { id: 'profile', label: 'Pass', icon: '💳' },
-  ];
+export const BottomNav: React.FC<BottomNavProps> = ({
+  currentTab,
+  onSelectTab,
+  theme = 'dark',
+}) => {
+  const t = PROTOTYPE_THEMES[theme];
 
   return (
-    <View style={styles.container}>
-      {tabs.map((tab) => {
-        const isActive = currentTab === tab.id;
+    <View
+      style={[
+        styles.tabs,
+        {
+          backgroundColor:
+            Platform.OS === 'web'
+              ? t.tabsBg
+              : theme === 'dark'
+              ? 'rgba(8,36,20,0.96)'
+              : 'rgba(255,255,255,0.96)',
+          borderColor: t.tabsBorder,
+        },
+        Platform.OS === 'web' &&
+          ({
+            backdropFilter: 'blur(18px) saturate(1.4)',
+            WebkitBackdropFilter: 'blur(18px) saturate(1.4)',
+            boxShadow:
+              theme === 'light'
+                ? '0 10px 30px rgba(6,60,25,0.15)'
+                : '0 12px 32px rgba(0,0,0,0.4)',
+          } as any),
+      ]}
+    >
+      {TABS.map(([key, label]) => {
+        const isActive = currentTab === key;
+        const itemColor = isActive ? t.tabOnColor : t.mute;
+
         return (
           <TouchableOpacity
-            key={tab.id}
-            onPress={() => onSelectTab(tab.id)}
-            style={styles.tabItem}
-            activeOpacity={0.7}
+            key={key}
+            style={[
+              styles.tabButton,
+              isActive && { backgroundColor: t.tabOnBg },
+            ]}
+            onPress={() => onSelectTab(key)}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.tabIcon, isActive && styles.tabIconActive]}>{tab.icon}</Text>
-            <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>{tab.label}</Text>
-            {isActive && <View style={styles.activeIndicator} />}
+            <PrototypeTabIcon tab={key} color={itemColor} />
+            <Text
+              style={[
+                styles.tabLabel,
+                {
+                  color: itemColor,
+                  fontWeight: isActive ? '700' : '400',
+                },
+              ]}
+            >
+              {label}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -40,50 +81,29 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
 };
 
 const styles = StyleSheet.create({
-  container: {
+  tabs: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 14,
+    zIndex: 3,
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: BRAND_COLORS.border,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
-    elevation: 8,
-    shadowColor: BRAND_COLORS.deepOcean,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderRadius: 26,
+    padding: 4,
   },
-  tabItem: {
+  tabButton: {
     flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    position: 'relative',
-  },
-  tabIcon: {
-    fontSize: 20,
-    marginBottom: 3,
-    opacity: 0.65,
-  },
-  tabIconActive: {
-    opacity: 1,
-    transform: [{ scale: 1.1 }],
+    gap: 3,
+    paddingTop: 9,
+    paddingBottom: 10,
+    borderRadius: 22,
   },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '500',
-    color: BRAND_COLORS.mutedText,
-  },
-  tabLabelActive: {
-    color: BRAND_COLORS.islandTeal,
-    fontWeight: '700',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: -6,
-    width: 24,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: BRAND_COLORS.islandTeal,
+    letterSpacing: 0.2,
   },
 });

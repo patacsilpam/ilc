@@ -1,204 +1,346 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar, Alert } from 'react-native';
-import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  UserProfile,
-  MembershipCard,
-  Video,
-  VideoCategory,
-  WelcomeGift,
-  MemberGift,
-  BRAND_COLORS,
-} from '@ilc/shared';
-
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  StatusBar,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { Header } from './src/components/Header';
-import { BottomNav, TabId } from './src/components/BottomNav';
-import { VideoPlayerModal } from './src/components/VideoPlayerModal';
-
+import { BottomNav } from './src/components/BottomNav';
 import { HomeScreen } from './src/screens/HomeScreen';
-import { VodScreen } from './src/screens/VodScreen';
 import { LiveTvScreen } from './src/screens/LiveTvScreen';
-import { TravelScreen } from './src/screens/TravelScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
-
-import { authService } from './src/services/auth';
-import { vodService } from './src/services/vod';
-import { giftService } from './src/services/gifts';
-import { notificationService } from './src/services/notifications';
+import { TravelScreen } from './src/screens/TravelScreen';
+import { VodScreen } from './src/screens/VodScreen';
+import { PlayerSheet, RegisterSheet } from './src/components/VideoPlayerModal';
+import {
+  HUBS,
+  INITIAL_VIDEOS,
+  PROTOTYPE_THEMES,
+  PrototypeFeedback,
+  PrototypeTab,
+  PrototypeTravelQuery,
+  PrototypeVideo,
+  ThemeMode,
+} from './src/constants/prototypeTheme';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<TabId>('home');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
+  const [tab, setTab] = useState<PrototypeTab>('home');
 
-  // Auth & Profile state
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [membership, setMembership] = useState<MembershipCard | null>(null);
+  const [reg, setReg] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [gift] = useState({
+    text: 'Free coffee at a partner café',
+    days: 7,
+  });
+  const [fb, setFb] = useState<PrototypeFeedback[]>([]);
+  const [city, setCity] = useState('All');
+  const [vids] = useState<PrototypeVideo[]>(INITIAL_VIDEOS);
+  const [travelQuery, setTravelQuery] = useState<PrototypeTravelQuery>({
+    type: 'Flights',
+    from: 'Bacolod (BCD)',
+    to: 'Cebu (CEB)',
+    date: '',
+  });
+  const [searched, setSearched] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [playerIndex, setPlayerIndex] = useState<number | null>(null);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [toast, setToast] = useState<{ title: string; msg: string } | null>(
+    null
+  );
+  const [hub, setHub] = useState('Bacolod-Silay Airport');
 
-  // Content state
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [categories, setCategories] = useState<VideoCategory[]>([]);
-  const [welcomeGifts, setWelcomeGifts] = useState<WelcomeGift[]>([]);
-  const [memberGifts, setMemberGifts] = useState<Array<MemberGift & { gift?: WelcomeGift }>>([]);
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // On startup: check active session and load live data
+  const t = PROTOTYPE_THEMES[theme];
+
+  const pushToast = (title: string, msg: string) => {
+    setToast({ title, msg });
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 6000);
+  };
+
   useEffect(() => {
-    initApp();
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
   }, []);
 
-  const initApp = async () => {
-    await checkAuth();
-    await loadData();
+  const handleSelectTab = (nextTab: PrototypeTab) => {
+    setTab(nextTab);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
 
-  const checkAuth = async () => {
-    try {
-      const session = await authService.getSession();
-      if (session.authenticated && session.user) {
-        setUser(session.user);
-        setMembership(session.membership);
-        loadMemberGifts();
-      }
-    } catch (e) {
-      console.warn('Session check skipped / offline');
-    }
+  const handleRegister = (
+    inputName: string,
+    inputEmail: string,
+    isGoogle: boolean
+  ) => {
+    const finalName = inputName.trim() || 'Juan dela Cruz';
+    const finalEmail =
+      inputEmail.trim() || (isGoogle ? 'juan@gmail.com' : 'juan@example.com');
+    setName(finalName);
+    setEmail(finalEmail);
+    setReg(true);
+    setRegisterOpen(false);
+    setTab('rewards');
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+    pushToast(
+      `Welcome, ${finalName.split(' ')[0]}!`,
+      `Your gift: ${gift.text}.`
+    );
   };
 
-  const loadData = async () => {
-    try {
-      const { videos: vList, categories: cList } = await vodService.fetchVideos();
-      setVideos(vList);
-      setCategories(cList);
-
-      const gifts = await giftService.fetchWelcomeGifts();
-      setWelcomeGifts(gifts);
-    } catch (e) {
-      console.warn('Initial data load error:', e);
-    }
+  const handleSimulateGeo = () => {
+    const destCity = HUBS[hub] || 'Bacolod';
+    pushToast(
+      `Welcome to ${destCity}!`,
+      reg
+        ? 'Show your ILC card for 5% off at partner merchants.'
+        : 'Join free and claim your welcome gift.'
+    );
   };
 
-  const loadMemberGifts = async () => {
-    try {
-      const mg = await giftService.fetchMyMemberGifts();
-      setMemberGifts(mg);
-    } catch (e) {
-      console.warn('Member gifts load error:', e);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadData();
-    if (user) await loadMemberGifts();
-    setIsRefreshing(false);
-  };
-
-  // Auth actions
-  const handleLogin = async (email: string, pass: string) => {
-    const res = await authService.login(email, pass);
-    setUser(res.user);
-    setMembership(res.membership || null);
-    await loadMemberGifts();
-    Alert.alert('Welcome Back', `Aloha ${res.user.display_name}! Your pass is ready.`);
-  };
-
-  const handleRegister = async (email: string, pass: string, name: string) => {
-    const res = await authService.register(email, pass, name);
-    setUser(res.user);
-    setMembership(res.membership || null);
-    await loadMemberGifts();
-    Alert.alert('Membership Created', `Welcome to Island Living! Your digital pass and gifts are ready.`);
-  };
-
-  const handleLogout = async () => {
-    await authService.logout();
-    setUser(null);
-    setMembership(null);
-    setMemberGifts([]);
-  };
-
-  const handleNotificationsPress = async () => {
-    const status = await notificationService.requestPushPermission();
-    Alert.alert('Island Announcements', status.message);
+  const handleSubmitFeedback = (
+    target: string,
+    starRating: number,
+    comment: string
+  ) => {
+    setFb((prev) => [{ w: target, r: starRating, t: comment }, ...prev]);
+    setRating(0);
+    pushToast('Thank you', 'Your feedback went to the ILC team.');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ExpoStatusBar style="light" />
-      <StatusBar barStyle="light-content" backgroundColor={BRAND_COLORS.deepOcean} />
-
-      {/* TOP HEADER */}
-      <Header
-        onPressLive={() => setCurrentTab('live')}
-        onPressProfile={() => setCurrentTab('profile')}
-        onPressNotifications={handleNotificationsPress}
-        memberCode={membership?.public_membership_code}
-        hasUnreadNotifications={true}
+    <SafeAreaView
+      style={[
+        styles.outerShell,
+        { backgroundColor: t.bg },
+        Platform.OS === 'web' &&
+          ({ backgroundImage: t.stageGradient } as any),
+      ]}
+    >
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={t.phoneBg}
       />
 
-      {/* MAIN SCREEN ROUTER */}
-      <View style={styles.content}>
-        {currentTab === 'home' && (
-          <HomeScreen
-            featuredVideo={videos.find((v) => v.is_featured) || videos[0]}
-            recentVideos={videos}
-            welcomeGifts={welcomeGifts}
-            onSelectVideo={(v) => setSelectedVideo(v)}
-            onNavigateTab={(tab) => setCurrentTab(tab)}
-            isRefreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            isMember={!!user}
-          />
+      <View
+        style={[
+          styles.mobileAppContainer,
+          {
+            backgroundColor: t.phoneBg,
+            borderColor: t.line,
+          },
+        ]}
+      >
+        {/* Persistent Mobile Brand Header */}
+        <Header
+          theme={theme}
+          onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          isRegistered={reg}
+          memberEmail={email}
+          onPressMember={() => {
+            if (reg) {
+              handleSelectTab('rewards');
+            } else {
+              setRegisterOpen(true);
+            }
+          }}
+        />
+
+        {/* In-App Push Toast Notification Banner */}
+        {toast && (
+          <TouchableOpacity
+            style={[
+              styles.banner,
+              {
+                backgroundColor: t.bannerBg,
+                borderColor: t.bannerBorder,
+              },
+              Platform.OS === 'web' &&
+                ({
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                } as any),
+            ]}
+            onPress={() => setToast(null)}
+            activeOpacity={0.9}
+          >
+            <Text style={[styles.bannerHeader, { color: t.bannerText }]}>
+              Island Living Channel · now
+            </Text>
+            <Text style={[styles.bannerBody, { color: t.bannerText }]}>
+              <Text style={{ fontWeight: '700' }}>{toast.title}</Text>{' '}
+              {toast.msg}
+            </Text>
+          </TouchableOpacity>
         )}
 
-        {currentTab === 'vod' && (
-          <VodScreen
-            videos={videos}
-            categories={categories}
-            onSelectVideo={(v) => setSelectedVideo(v)}
-            isRefreshing={isRefreshing}
-            onRefresh={handleRefresh}
-          />
-        )}
+        {/* Main Scrollable Screen Content */}
+        <ScrollView
+          ref={scrollRef}
+          style={styles.scr}
+          contentContainerStyle={styles.scrContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {tab === 'home' && (
+            <HomeScreen
+              theme={theme}
+              videos={vids}
+              isRegistered={reg}
+              memberName={name}
+              gift={gift}
+              onPlayVideo={(idx) => setPlayerIndex(idx)}
+              onOpenRegister={() => setRegisterOpen(true)}
+            />
+          )}
 
-        {currentTab === 'live' && <LiveTvScreen />}
+          {tab === 'live' && (
+            <LiveTvScreen theme={theme} onPushToast={pushToast} />
+          )}
 
-        {currentTab === 'travel' && <TravelScreen />}
+          {tab === 'rewards' && (
+            <ProfileScreen
+              theme={theme}
+              isRegistered={reg}
+              memberName={name}
+              memberEmail={email}
+              gift={gift}
+              city={city}
+              onSelectCity={setCity}
+              onOpenRegister={() => setRegisterOpen(true)}
+              onPushToast={pushToast}
+            />
+          )}
 
-        {currentTab === 'profile' && (
-          <ProfileScreen
-            user={user}
-            membership={membership}
-            memberGifts={memberGifts}
-            onLogin={handleLogin}
+          {tab === 'travel' && (
+            <TravelScreen
+              theme={theme}
+              query={travelQuery}
+              searched={searched}
+              onChangeQuery={(next, reset) => {
+                setTravelQuery((prev) => ({ ...prev, ...next }));
+                if (reset) setSearched(false);
+              }}
+              onSearch={() => setSearched(true)}
+              onPushToast={pushToast}
+            />
+          )}
+
+          {tab === 'more' && (
+            <VodScreen
+              theme={theme}
+              onToggleTheme={() =>
+                setTheme(theme === 'light' ? 'dark' : 'light')
+              }
+              isRegistered={reg}
+              memberName={name}
+              memberEmail={email}
+              onOpenRegister={() => setRegisterOpen(true)}
+              onSignOut={() => {
+                setReg(false);
+                setName('');
+                setEmail('');
+                pushToast('Signed out', 'You have signed out of your account.');
+              }}
+              rating={rating}
+              onChangeRating={setRating}
+              hub={hub}
+              onChangeHub={setHub}
+              feedbackList={fb}
+              onSubmitFeedback={handleSubmitFeedback}
+              onSimulateGeo={handleSimulateGeo}
+              onPushToast={pushToast}
+            />
+          )}
+        </ScrollView>
+
+        {/* Registration Modal Sheet */}
+        {registerOpen && (
+          <RegisterSheet
+            theme={theme}
             onRegister={handleRegister}
-            onLogout={handleLogout}
-            onRefreshGifts={loadMemberGifts}
+            onCancel={() => setRegisterOpen(false)}
           />
         )}
+
+        {/* Video Player Modal Sheet */}
+        {playerIndex !== null && vids[playerIndex] && (
+          <PlayerSheet
+            theme={theme}
+            video={vids[playerIndex]}
+            index={playerIndex}
+            onClose={() => setPlayerIndex(null)}
+          />
+        )}
+
+        {/* Floating Glass Bottom Navigation */}
+        <BottomNav
+          currentTab={tab}
+          onSelectTab={handleSelectTab}
+          theme={theme}
+        />
       </View>
-
-      {/* VIDEO DETAIL & PLAYBACK MODAL */}
-      <VideoPlayerModal
-        video={selectedVideo}
-        onClose={() => setSelectedVideo(null)}
-        relatedVideos={videos.filter((v) => v.id !== selectedVideo?.id)}
-        onSelectRelated={(v) => setSelectedVideo(v)}
-      />
-
-      {/* BOTTOM TAB NAVIGATION */}
-      <BottomNav currentTab={currentTab} onSelectTab={(tab) => setCurrentTab(tab)} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  outerShell: {
     flex: 1,
-    backgroundColor: BRAND_COLORS.deepOcean,
+    alignItems: 'center',
   },
-  content: {
+  mobileAppContainer: {
     flex: 1,
-    backgroundColor: BRAND_COLORS.warmIvory,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 430 : undefined,
+    position: 'relative',
+    overflow: 'hidden',
+    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
+  },
+  scr: {
+    flex: 1,
+  },
+  scrContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 110,
+  },
+  banner: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    top: 14,
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    zIndex: 5,
+  },
+  bannerHeader: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  bannerBody: {
+    fontSize: 13,
+    opacity: 0.92,
   },
 });
