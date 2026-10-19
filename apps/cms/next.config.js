@@ -1,20 +1,7 @@
-const path = require('path');
-
-const reactPath = path.dirname(require.resolve('react/package.json'));
-const reactDomPath = path.dirname(require.resolve('react-dom/package.json'));
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@ilc/shared'],
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      react: reactPath,
-      'react-dom': reactDomPath,
-    };
-    return config;
-  },
   images: {
     remotePatterns: [
       {
