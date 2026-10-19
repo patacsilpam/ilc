@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  Image,
 } from 'react-native';
 import { SceneBackground } from './PrototypeArtwork';
 import {
@@ -35,6 +36,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
 }) => {
   const t = PROTOTYPE_THEMES[theme];
   const sceneIdx = video.sceneIndex !== undefined ? video.sceneIndex : index;
+  const hasImage = !!video.thumbnailUrl;
 
   if (layout === 'hero') {
     return (
@@ -47,38 +49,51 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         onPress={onPress}
         activeOpacity={0.9}
       >
-        <SceneBackground
-          index={sceneIdx}
-          overlayGradient="hero"
-          style={styles.heroScene}
-        >
-          <View style={styles.heroInner}>
-            <View style={styles.heroBadgeRow}>
-              <View
-                style={[
-                  styles.heroTag,
-                  Platform.OS === 'web' &&
-                    ({ backdropFilter: 'blur(8px)' } as any),
-                ]}
-              >
-                <Text style={styles.heroTagText}>Featured</Text>
+        {hasImage ? (
+          <View style={styles.heroScene}>
+            <Image
+              source={{ uri: video.thumbnailUrl }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+            />
+            <View style={styles.heroOverlay} />
+            <View style={styles.heroInner}>
+              <View style={styles.heroBadgeRow}>
+                <View style={styles.heroTag}>
+                  <Text style={styles.heroTagText}>Featured</Text>
+                </View>
+                <View style={styles.heroCatTag}>
+                  <Text style={styles.heroCatText}>{video.category}</Text>
+                </View>
               </View>
-              <View
-                style={[
-                  styles.heroCatTag,
-                  Platform.OS === 'web' &&
-                    ({ backdropFilter: 'blur(8px)' } as any),
-                ]}
-              >
-                <Text style={styles.heroCatText}>{video.category}</Text>
-              </View>
+              <Text style={[styles.heroTitle, { fontFamily: SERIF_FONT }]}>
+                {video.t}
+              </Text>
+              <Text style={styles.heroSub}>{video.m} · Tap to watch</Text>
             </View>
-            <Text style={[styles.heroTitle, { fontFamily: SERIF_FONT }]}>
-              {video.t}
-            </Text>
-            <Text style={styles.heroSub}>{video.m} · tap to watch</Text>
           </View>
-        </SceneBackground>
+        ) : (
+          <SceneBackground
+            index={sceneIdx}
+            overlayGradient="hero"
+            style={styles.heroScene}
+          >
+            <View style={styles.heroInner}>
+              <View style={styles.heroBadgeRow}>
+                <View style={styles.heroTag}>
+                  <Text style={styles.heroTagText}>Featured</Text>
+                </View>
+                <View style={styles.heroCatTag}>
+                  <Text style={styles.heroCatText}>{video.category}</Text>
+                </View>
+              </View>
+              <Text style={[styles.heroTitle, { fontFamily: SERIF_FONT }]}>
+                {video.t}
+              </Text>
+              <Text style={styles.heroSub}>{video.m} · Tap to watch</Text>
+            </View>
+          </SceneBackground>
+        )}
       </TouchableOpacity>
     );
   }
@@ -90,21 +105,24 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         onPress={onPress}
         activeOpacity={0.85}
       >
-        <SceneBackground
-          index={sceneIdx}
-          overlayGradient="thumb"
-          style={styles.continueThumb}
-        >
+        <View style={styles.continueThumb}>
+          {hasImage ? (
+            <Image
+              source={{ uri: video.thumbnailUrl }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+            />
+          ) : (
+            <SceneBackground
+              index={sceneIdx}
+              overlayGradient="thumb"
+              style={StyleSheet.absoluteFillObject}
+            />
+          )}
           <View style={styles.continuePlayCircle}>
             <Text style={styles.continuePlayIcon}>▶</Text>
           </View>
-          <View
-            style={[
-              styles.durationPill,
-              Platform.OS === 'web' &&
-                ({ backdropFilter: 'blur(6px)' } as any),
-            ]}
-          >
+          <View style={styles.durationPill}>
             <Text style={styles.durationText}>
               {resumeLabel || video.m}
             </Text>
@@ -117,7 +135,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
               ]}
             />
           </View>
-        </SceneBackground>
+        </View>
         <Text
           style={[styles.vidTitle, { color: t.ink }]}
           numberOfLines={2}
@@ -134,50 +152,56 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <SceneBackground
-        index={sceneIdx}
-        overlayGradient="thumb"
-        style={styles.thumb}
-      >
-        <View
-          style={[
-            styles.categoryMicroPill,
-            Platform.OS === 'web' &&
-              ({ backdropFilter: 'blur(6px)' } as any),
-          ]}
-        >
+      <View style={styles.thumb}>
+        {hasImage ? (
+          <Image
+            source={{ uri: video.thumbnailUrl }}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="cover"
+          />
+        ) : (
+          <SceneBackground
+            index={sceneIdx}
+            overlayGradient="thumb"
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
+        <View style={styles.categoryMicroPill}>
           <Text style={styles.categoryMicroText}>{video.category}</Text>
         </View>
-        <View
-          style={[
-            styles.durationPill,
-            Platform.OS === 'web' &&
-              ({ backdropFilter: 'blur(6px)' } as any),
-          ]}
-        >
+        <View style={styles.durationPill}>
           <Text style={styles.durationText}>{video.m}</Text>
         </View>
-      </SceneBackground>
-      <Text style={[styles.vidTitle, { color: t.ink }]}>{video.t}</Text>
+      </View>
+      <Text style={[styles.vidTitle, { color: t.ink }]} numberOfLines={2}>
+        {video.t}
+      </Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   heroTouch: {
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
-    minHeight: 280,
+    minHeight: 260,
   },
   heroScene: {
-    minHeight: 280,
-    borderRadius: 28,
-    padding: 22,
+    minHeight: 260,
+    borderRadius: 24,
+    padding: 20,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(10, 15, 29, 0.45)',
   },
   heroInner: {
     flex: 1,
     justifyContent: 'flex-end',
     gap: 6,
+    zIndex: 2,
   },
   heroBadgeRow: {
     flexDirection: 'row',
@@ -185,7 +209,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   heroTag: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     paddingVertical: 4,
     paddingHorizontal: 11,
     borderRadius: 99,
@@ -197,47 +221,88 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   heroCatTag: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
     paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingHorizontal: 11,
     borderRadius: 99,
   },
   heroCatText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '600',
   },
   heroTitle: {
     color: '#FFFFFF',
-    fontSize: 27,
-    lineHeight: 30,
-    fontWeight: '500',
-    margin: 0,
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 28,
   },
   heroSub: {
-    color: 'rgba(255,255,255,0.92)',
+    color: 'rgba(255,255,255,0.85)',
     fontSize: 13,
-    margin: 0,
+    fontWeight: '500',
+  },
+  continueCard: {
+    width: 175,
+    marginRight: 14,
+  },
+  continueThumb: {
+    width: '100%',
+    aspectRatio: 16 / 9, // Standard YouTube 16:9 ratio
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#0a0f1d',
+  },
+  continuePlayCircle: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -16 }, { translateY: -16 }],
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  continuePlayIcon: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    marginLeft: 2,
+  },
+  continueBarTrack: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  continueBarFill: {
+    height: '100%',
   },
   vidButton: {
     width: '48%',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   thumb: {
     width: '100%',
-    aspectRatio: 16 / 10,
-    borderRadius: 18,
+    aspectRatio: 16 / 9, // Standard YouTube 16:9 ratio
+    borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#0a0f1d',
   },
   categoryMicroPill: {
     position: 'absolute',
     left: 6,
     top: 6,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     paddingVertical: 2,
     paddingHorizontal: 7,
     borderRadius: 6,
+    zIndex: 2,
   },
   categoryMicroText: {
     color: '#FFFFFF',
@@ -247,62 +312,22 @@ const styles = StyleSheet.create({
   durationPill: {
     position: 'absolute',
     right: 6,
-    bottom: 8,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    bottom: 6,
+    backgroundColor: 'rgba(0,0,0,0.75)',
     paddingVertical: 1,
     paddingHorizontal: 6,
-    borderRadius: 6,
+    borderRadius: 4,
+    zIndex: 2,
   },
   durationText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10.5,
+    fontWeight: '600',
   },
   vidTitle: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '600',
     lineHeight: 17,
     marginTop: 8,
-  },
-  continueCard: {
-    width: 168,
-    marginRight: 12,
-  },
-  continueThumb: {
-    width: '100%',
-    aspectRatio: 16 / 10,
-    borderRadius: 18,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  continuePlayCircle: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -15,
-    marginLeft: -15,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continuePlayIcon: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    marginLeft: 2,
-  },
-  continueBarTrack: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-  },
-  continueBarFill: {
-    height: '100%',
   },
 });

@@ -3,12 +3,17 @@ import { Platform } from 'react-native';
 export type ThemeMode = 'dark' | 'light';
 export type PrototypeTab = 'home' | 'live' | 'rewards' | 'travel' | 'more';
 
+import realYoutubeData from '../data/realYoutubeContent.json';
+
 export type VideoCategoryFilter =
   | 'All'
+  | 'Travel Destination'
+  | 'Festivals'
+  | 'Sipalay'
+  | 'Christmas & New Year'
   | 'Explore'
   | 'Food'
   | 'Hotels & Resorts'
-  | 'Festivals'
   | 'Philippines'
   | 'International';
 
@@ -16,10 +21,13 @@ export interface PrototypeVideo {
   id: string;
   t: string;
   m: string;
-  category: 'Explore' | 'Food' | 'Hotels & Resorts' | 'Festivals';
-  region: 'Philippines' | 'International';
-  sceneIndex: number;
+  category: string;
+  region?: string;
+  sceneIndex?: number;
   videoUrl?: string;
+  embedUrl?: string;
+  thumbnailUrl?: string;
+  isShort?: boolean;
 }
 
 export interface WatchHistoryItem {
@@ -64,94 +72,45 @@ export interface NotificationItem {
 
 export const VIDEO_CATEGORIES: VideoCategoryFilter[] = [
   'All',
-  'Explore',
-  'Food',
-  'Hotels & Resorts',
+  'Travel Destination',
   'Festivals',
+  'Sipalay',
+  'Christmas & New Year',
 ];
 
-export const INITIAL_VIDEOS: PrototypeVideo[] = [
-  {
-    id: 'vid-1',
-    t: 'Siquijor: island of slow days',
-    m: '6:20',
-    category: 'Explore',
+export const INITIAL_VIDEOS: PrototypeVideo[] = realYoutubeData.videos.map((v, idx) => {
+  let cat = 'Travel Destination';
+  const lower = v.title.toLowerCase();
+  if (
+    lower.includes('sinulog') ||
+    lower.includes('festival') ||
+    lower.includes('masskara') ||
+    lower.includes('bangsamoro') ||
+    lower.includes('fiesta')
+  ) {
+    cat = 'Festivals';
+  } else if (lower.includes('sipalay')) {
+    cat = 'Sipalay';
+  } else if (lower.includes('christmas') || lower.includes('new year')) {
+    cat = 'Christmas & New Year';
+  }
+  return {
+    id: v.id,
+    t: v.title,
+    m: v.duration || 'Feature',
+    category: cat,
     region: 'Philippines',
-    sceneIndex: 0,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  },
-  {
-    id: 'vid-2',
-    t: 'Street food crawl in Iloilo',
-    m: '4:45',
-    category: 'Food',
-    region: 'Philippines',
-    sceneIndex: 1,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  },
-  {
-    id: 'vid-3',
-    t: 'Cebu by ferry, island to island',
-    m: '8:10',
-    category: 'Explore',
-    region: 'Philippines',
-    sceneIndex: 2,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  },
-  {
-    id: 'vid-4',
-    t: 'Weekend in Bacolod: sweets and sunsets',
-    m: '5:30',
-    category: 'Festivals',
-    region: 'Philippines',
-    sceneIndex: 3,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  },
-  {
-    id: 'vid-5',
-    t: 'Hidden beaches of Guimaras',
-    m: '3:55',
-    category: 'Hotels & Resorts',
-    region: 'Philippines',
-    sceneIndex: 4,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-  },
-  {
-    id: 'vid-6',
-    t: 'Dive day at Mactan',
-    m: '7:05',
-    category: 'Hotels & Resorts',
-    region: 'Philippines',
-    sceneIndex: 5,
-    videoUrl:
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-  },
-  {
-    id: 'vid-7',
-    t: 'MassKara Festival: City of Smiles after dark',
-    m: '9:15',
-    category: 'Festivals',
-    region: 'Philippines',
-    sceneIndex: 3,
-  },
-  {
-    id: 'vid-8',
-    t: 'Bali & Lombok: Coastal sanctuaries across the sea',
-    m: '11:40',
-    category: 'Hotels & Resorts',
-    region: 'International',
-    sceneIndex: 0,
-  },
-];
+    sceneIndex: idx % 6,
+    videoUrl: v.videoUrl,
+    embedUrl: v.embedUrl,
+    thumbnailUrl: v.thumbnail,
+    isShort: false,
+  };
+});
 
 export const INITIAL_CONTINUE_WATCHING: WatchHistoryItem[] = [
-  { videoId: 'vid-2', progress: 64, lastWatched: '2m left' },
-  { videoId: 'vid-5', progress: 38, lastWatched: '2m 25s left' },
+  { videoId: 'ZfxZC_toy1U', progress: 65, lastWatched: '3m left' },
+  { videoId: 'YYjXRYsN_vI', progress: 38, lastWatched: '5m left' },
 ];
 
 export const MERCHANTS: PrototypeMerchant[] = [

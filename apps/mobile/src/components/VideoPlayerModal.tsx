@@ -6,8 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  Linking,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { YouTubeEmbed } from './YouTubeEmbed';
 import {
   BrandLogo,
   BrandStripe,
@@ -78,40 +80,63 @@ export const PlayerSheet: React.FC<PlayerSheetProps> = ({
     onClose();
   };
 
+  const hasEmbed = !!video.embedUrl;
+  const isShort = !!video.isShort;
+
   return (
     <View style={[styles.sheet, { backgroundColor: t.sheetBg }]}>
-      <View
-        style={[
-          styles.liveBox,
-          Platform.OS === 'web' &&
-            ({ boxShadow: '0 20px 40px rgba(0,0,0,0.4)' } as any),
-        ]}
-      >
-        <SceneBackground index={video.sceneIndex ?? index} style={{ flex: 1 }}>
-          <View style={styles.liveCenter}>
-            <TouchableOpacity
-              style={[
-                styles.playCircle,
-                Platform.OS === 'web' &&
-                  ({ backdropFilter: 'blur(8px)' } as any),
-              ]}
-              onPress={() => setPlaying(!playing)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.playText}>{playing ? '❚❚' : '▶'}</Text>
-            </TouchableOpacity>
-          </View>
-        </SceneBackground>
-      </View>
-
-      <View style={[styles.bar, { backgroundColor: t.line }]}>
+      {hasEmbed ? (
         <View
           style={[
-            styles.barFill,
-            { backgroundColor: t.hib, width: `${progress}%` },
+            styles.liveBox,
+            isShort ? { height: 420, alignItems: 'center', backgroundColor: '#000000' } : { aspectRatio: 16 / 9, height: undefined },
+            Platform.OS === 'web' &&
+              ({ boxShadow: '0 20px 40px rgba(0,0,0,0.4)' } as any),
           ]}
-        />
-      </View>
+        >
+          <YouTubeEmbed
+            embedUrl={video.embedUrl!}
+            title={video.t}
+            aspectRatio={isShort ? 9 / 16 : 16 / 9}
+            autoPlay
+          />
+        </View>
+      ) : (
+        <View
+          style={[
+            styles.liveBox,
+            Platform.OS === 'web' &&
+              ({ boxShadow: '0 20px 40px rgba(0,0,0,0.4)' } as any),
+          ]}
+        >
+          <SceneBackground index={video.sceneIndex ?? index} style={{ flex: 1 }}>
+            <View style={styles.liveCenter}>
+              <TouchableOpacity
+                style={[
+                  styles.playCircle,
+                  Platform.OS === 'web' &&
+                    ({ backdropFilter: 'blur(8px)' } as any),
+                ]}
+                onPress={() => setPlaying(!playing)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.playText}>{playing ? '❚❚' : '▶'}</Text>
+              </TouchableOpacity>
+            </View>
+          </SceneBackground>
+        </View>
+      )}
+
+      {!hasEmbed && (
+        <View style={[styles.bar, { backgroundColor: t.line }]}>
+          <View
+            style={[
+              styles.barFill,
+              { backgroundColor: t.hib, width: `${progress}%` },
+            ]}
+          />
+        </View>
+      )}
 
       <View style={styles.metaChipRow}>
         <View style={[styles.smallTagPill, { backgroundColor: t.tabOnBg }]}>
@@ -119,18 +144,30 @@ export const PlayerSheet: React.FC<PlayerSheetProps> = ({
             {video.category}
           </Text>
         </View>
-        <View style={[styles.smallTagPill, { backgroundColor: t.inputBg }]}>
-          <Text style={[styles.smallTagText, { color: t.mute }]}>
-            {video.region}
-          </Text>
-        </View>
+        {video.region ? (
+          <View style={[styles.smallTagPill, { backgroundColor: t.inputBg }]}>
+            <Text style={[styles.smallTagText, { color: t.mute }]}>
+              {video.region}
+            </Text>
+          </View>
+        ) : null}
+        {video.videoUrl ? (
+          <TouchableOpacity
+            style={[styles.smallTagPill, { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderWidth: 1, borderColor: '#ef4444' }]}
+            onPress={() => Linking.openURL(video.videoUrl!).catch(() => {})}
+          >
+            <Text style={[styles.smallTagText, { color: '#ef4444', fontWeight: '700' }]}>
+              Watch on YouTube ↗
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      <H2 theme={theme} style={{ marginTop: 4, marginBottom: 0 }}>
+      <H2 theme={theme} style={{ marginTop: 6, marginBottom: 0 }}>
         {video.t}
       </H2>
-      <MuteText theme={theme} style={{ marginBottom: 12 }}>
-        {video.m} · Island Living Original ({progress}% watched)
+      <MuteText theme={theme} style={{ marginBottom: 14 }}>
+        {video.m} · Island Living Channel
       </MuteText>
 
       <ProtoButton theme={theme} label="Close" full onPress={handleClose} />

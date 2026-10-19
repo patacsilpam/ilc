@@ -21,6 +21,7 @@ import {
   ProtoChip,
 } from '../components/PrototypePrimitives';
 import { VideoCard } from '../components/VideoCard';
+import { ShortsCard } from '../components/ShortsCard';
 import {
   PROTOTYPE_THEMES,
   PrototypeVideo,
@@ -84,23 +85,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     })
     .filter(Boolean) as (WatchHistoryItem & { video: PrototypeVideo })[];
 
-  const [ytVideos, setYtVideos] = useState<YouTubeVideoItem[]>([]);
-  const [ytShorts, setYtShorts] = useState<YouTubeVideoItem[]>([]);
-  const [loadingYt, setLoadingYt] = useState<boolean>(true);
+  const [ytVideos, setYtVideos] = useState<YouTubeVideoItem[]>(
+    youtubeService.getRealVideos()
+  );
+  const [ytShorts, setYtShorts] = useState<YouTubeVideoItem[]>(
+    youtubeService.getRealShorts()
+  );
+  const [loadingYt, setLoadingYt] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
         const data = await youtubeService.fetchWatchData();
-        if (isMounted) {
-          setYtVideos(data.videos || []);
-          setYtShorts(data.shorts || []);
+        if (isMounted && data.videos && data.videos.length > 0) {
+          setYtVideos(data.videos);
+          setYtShorts(data.shorts);
         }
       } catch (err) {
-        console.warn('[HomeScreen] Could not load YouTube content:', err);
-      } finally {
-        if (isMounted) setLoadingYt(false);
+        console.warn('[HomeScreen] Could not load live YouTube content:', err);
       }
     })();
     return () => {
@@ -250,48 +253,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           contentContainerStyle={styles.shortsCarousel}
         >
           {ytShorts.map((short) => (
-            <TouchableOpacity
+            <ShortsCard
               key={short.id}
-              style={[
-                styles.shortCard,
-                {
-                  backgroundColor: t.surf,
-                  borderColor: t.line,
-                },
-                Platform.OS === 'web' &&
-                  ({
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-                  } as any),
-              ]}
-              onPress={() => onSelectYouTubeVideo && onSelectYouTubeVideo(short)}
-              activeOpacity={0.88}
-            >
-              <View style={styles.shortThumbWrapper}>
-                <Image
-                  source={{ uri: short.thumbnailUrl }}
-                  style={styles.shortThumb}
-                  resizeMode="cover"
-                />
-                <View style={styles.shortOverlayGradient} />
-                <View style={styles.shortPlayBadge}>
-                  <Text style={styles.shortPlayTriangle}>▶</Text>
-                </View>
-                <View style={styles.shortDurationPill}>
-                  <Text style={styles.shortDurationText}>Short</Text>
-                </View>
-              </View>
-              <View style={styles.shortMeta}>
-                <Text
-                  style={[styles.shortTitle, { color: t.ink }]}
-                  numberOfLines={2}
-                >
-                  {short.title}
-                </Text>
-                <Text style={[styles.shortDate, { color: t.mute }]}>
-                  {new Date(short.publishedAt).toLocaleDateString()}
-                </Text>
-              </View>
-            </TouchableOpacity>
+              item={short}
+              theme={theme}
+              onPress={(s) => {
+                if (onSelectYouTubeVideo) {
+                  onSelectYouTubeVideo(s);
+                } else {
+                  onPlayVideo({
+                    id: s.id,
+                    t: s.title,
+                    m: 'Short',
+                    category: 'Shorts',
+                    sceneIndex: 0,
+                    videoUrl: s.videoUrl,
+                    embedUrl: s.embedUrl,
+                    thumbnailUrl: s.thumbnailUrl,
+                    isShort: true,
+                  });
+                }
+              }}
+            />
           ))}
         </ScrollView>
       ) : (
