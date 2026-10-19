@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import {
   FieldLabel,
   H1,
@@ -26,7 +27,14 @@ interface MoreScreenProps {
   isRegistered: boolean;
   memberName: string;
   memberEmail: string;
+  geoAlertsEnabled: boolean;
+  onToggleGeoAlerts: () => void;
+  announcementsEnabled: boolean;
+  onToggleAnnouncements: () => void;
   onOpenRegister: () => void;
+  onOpenInbox: () => void;
+  onOpenOnboarding: () => void;
+  onOpenFullscreenQr: () => void;
   onSignOut: () => void;
   rating: number;
   onChangeRating: (rating: number) => void;
@@ -51,7 +59,14 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
   isRegistered,
   memberName,
   memberEmail,
+  geoAlertsEnabled,
+  onToggleGeoAlerts,
+  announcementsEnabled,
+  onToggleAnnouncements,
   onOpenRegister,
+  onOpenInbox,
+  onOpenOnboarding,
+  onOpenFullscreenQr,
   onSignOut,
   rating,
   onChangeRating,
@@ -77,31 +92,61 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
 
   return (
     <View>
-      <H1 theme={theme}>More</H1>
+      <H1 theme={theme}>Profile & Settings</H1>
+      <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 6 }}>
+        Manage your account details, notifications, and app preferences.
+      </MuteText>
 
-      {/* Member Account Section */}
-      <PromoBox theme={theme} style={{ marginTop: 14, marginBottom: 4 }}>
+      {/* Account Details Card */}
+      <PromoBox theme={theme} style={{ marginTop: 10, marginBottom: 4 }}>
         {isRegistered ? (
-          <View style={styles.accountRow}>
-            <View style={{ flex: 1 }}>
-              <H3 theme={theme}>{memberName}</H3>
-              <MuteText theme={theme}>
-                {memberEmail} · {computeMemberId(memberEmail)}
-              </MuteText>
+          <View>
+            <View style={styles.accountHeader}>
+              <View
+                style={[
+                  styles.avatarCircle,
+                  { backgroundColor: t.brand },
+                ]}
+              >
+                <Text style={[styles.avatarInitials, { color: t.on }]}>
+                  {(memberName || 'J')
+                    .split(' ')
+                    .map((p) => p[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <H3 theme={theme}>{memberName}</H3>
+                <MuteText theme={theme}>{memberEmail}</MuteText>
+                <Text style={[styles.memberBadgeText, { color: t.brand }]}>
+                  Active Member · {computeMemberId(memberEmail)}
+                </Text>
+              </View>
             </View>
-            <ProtoButton
-              theme={theme}
-              alt
-              label="Sign out"
-              onPress={onSignOut}
-            />
+
+            <View style={styles.accountActions}>
+              <ProtoButton
+                theme={theme}
+                label="Show QR Card"
+                onPress={onOpenFullscreenQr}
+                style={{ flex: 1 }}
+              />
+              <ProtoButton
+                theme={theme}
+                alt
+                label="Log out"
+                onPress={onSignOut}
+              />
+            </View>
           </View>
         ) : (
           <View>
-            <H3 theme={theme}>Island Living Member Pass</H3>
+            <H3 theme={theme}>Guest Traveler</H3>
             <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 10 }}>
-              Sign in or create a free account to unlock your QR card and
-              welcome gift.
+              Create your free account to unlock your digital membership card,
+              welcome gift, and 5% partner discount.
             </MuteText>
             <ProtoButton
               theme={theme}
@@ -112,6 +157,93 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
           </View>
         )}
       </PromoBox>
+
+      {/* Notification Toggles & Inbox */}
+      <H2 theme={theme}>Notifications</H2>
+
+      <TouchableOpacity
+        style={[styles.settingRow, { borderBottomColor: t.line }]}
+        onPress={onToggleGeoAlerts}
+        activeOpacity={0.8}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: t.ink }]}>
+            Geo arrival alerts
+          </Text>
+          <MuteText theme={theme}>
+            Airport & ferry terminal partner discount pushes
+          </MuteText>
+        </View>
+        <View
+          style={[
+            styles.toggleTrack,
+            {
+              backgroundColor: geoAlertsEnabled ? t.brand : t.inputBg,
+              borderColor: geoAlertsEnabled ? t.brand : t.line,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.toggleThumb,
+              {
+                backgroundColor: geoAlertsEnabled ? t.on : t.mute,
+                transform: [{ translateX: geoAlertsEnabled ? 18 : 0 }],
+              },
+            ]}
+          />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.settingRow, { borderBottomColor: t.line }]}
+        onPress={onToggleAnnouncements}
+        activeOpacity={0.8}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: t.ink }]}>
+            Announcements & premieres
+          </Text>
+          <MuteText theme={theme}>
+            New Island Living episodes and live stream reminders
+          </MuteText>
+        </View>
+        <View
+          style={[
+            styles.toggleTrack,
+            {
+              backgroundColor: announcementsEnabled ? t.brand : t.inputBg,
+              borderColor: announcementsEnabled ? t.brand : t.line,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.toggleThumb,
+              {
+                backgroundColor: announcementsEnabled ? t.on : t.mute,
+                transform: [{ translateX: announcementsEnabled ? 18 : 0 }],
+              },
+            ]}
+          />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.settingRow, { borderBottomColor: t.line }]}
+        onPress={onOpenInbox}
+        activeOpacity={0.8}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: t.ink }]}>
+            Notification inbox
+          </Text>
+          <MuteText theme={theme}>
+            View past geo arrival alerts and channel announcements
+          </MuteText>
+        </View>
+        <Feather name="chevron-right" size={18} color={t.mute} />
+      </TouchableOpacity>
 
       {/* Rate Your Experience Section */}
       <H2 theme={theme}>Rate your experience</H2>
@@ -170,7 +302,7 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
               style={[styles.fbRow, { borderBottomColor: t.line }]}
             >
               <View style={{ flex: 1 }}>
-                <Text style={[styles.fbTarget, { color: t.ink }]}>{f.w}</Text>
+                <Text style={[styles.settingTitle, { color: t.ink }]}>{f.w}</Text>
                 <MuteText theme={theme}>{f.t}</MuteText>
               </View>
               <Text style={[styles.fbStars, { color: t.hib }]}>
@@ -181,9 +313,9 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
         </View>
       )}
 
-      {/* Arrival Hub Perks & App Preferences */}
-      <H2 theme={theme}>Arrival hub alerts</H2>
-      <FieldLabel theme={theme}>Current travel gateway</FieldLabel>
+      {/* Arrival Hub Test & App Preferences */}
+      <H2 theme={theme}>Travel gateway & app</H2>
+      <FieldLabel theme={theme}>Current arrival hub</FieldLabel>
       <ProtoSelect
         theme={theme}
         options={HUB_OPTIONS}
@@ -195,13 +327,13 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
         theme={theme}
         alt
         full
-        label="Check nearby partner perks"
+        label="Test arrival geo alert"
         onPress={onSimulateGeo}
       />
 
-      <View style={[styles.themeRow, { borderTopColor: t.line }]}>
-        <View>
-          <Text style={[styles.fbTarget, { color: t.ink }]}>Appearance</Text>
+      <View style={[styles.settingRow, { borderBottomColor: t.line, marginTop: 10 }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: t.ink }]}>Appearance</Text>
           <MuteText theme={theme}>
             {theme === 'dark' ? 'Dark forest theme' : 'Light island theme'}
           </MuteText>
@@ -209,20 +341,83 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
         <ProtoButton
           theme={theme}
           alt
-          label={theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'}
+          label={theme === 'dark' ? '☀ Light' : '☾ Dark'}
           onPress={onToggleTheme}
         />
       </View>
+
+      <TouchableOpacity
+        style={[styles.settingRow, { borderBottomWidth: 0 }]}
+        onPress={onOpenOnboarding}
+        activeOpacity={0.8}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: t.ink }]}>
+            Welcome tour & airport journey
+          </Text>
+          <MuteText theme={theme}>
+            Replay the 3-step Island Living onboarding guide
+          </MuteText>
+        </View>
+        <Feather name="compass" size={18} color={t.brand} />
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  accountRow: {
+  accountHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  avatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitials: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  memberBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  accountActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  settingTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  toggleTrack: {
+    width: 46,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
   },
   starsRow: {
     flexDirection: 'row',
@@ -243,22 +438,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  fbTarget: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
   fbStars: {
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.5,
-  },
-  themeRow: {
-    marginTop: 22,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
   },
 });

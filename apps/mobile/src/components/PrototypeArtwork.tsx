@@ -173,10 +173,22 @@ export const PrototypeTabIcon: React.FC<PrototypeTabIconProps> = ({ tab, color }
 
 interface PrototypeQrCodeProps {
   seed: string;
+  size?: number;
 }
 
-export const PrototypeQrCode: React.FC<PrototypeQrCodeProps> = ({ seed }) => {
+export const PrototypeQrCode: React.FC<PrototypeQrCodeProps> = ({
+  seed,
+  size = 96,
+}) => {
   const matrix = React.useMemo(() => generateQrMatrix(seed), [seed]);
+  const boxStyle = {
+    width: size,
+    height: size,
+    borderRadius: size > 120 ? 22 : 14,
+    backgroundColor: '#FFFFFF',
+    padding: size > 120 ? 14 : 6,
+    flexShrink: 0,
+  };
 
   if (Platform.OS === 'web') {
     let rects = '';
@@ -187,9 +199,9 @@ export const PrototypeQrCode: React.FC<PrototypeQrCodeProps> = ({ seed }) => {
         }
       }
     }
-    const svgHtml = `<svg viewBox="-1 -1 23 23" fill="#10252B" aria-label="Sample QR code" style="width:100%;height:100%;display:block">${rects}</svg>`;
+    const svgHtml = `<svg viewBox="-1 -1 23 23" fill="#10252B" aria-label="Member QR code" style="width:100%;height:100%;display:block">${rects}</svg>`;
     return (
-      <View style={styles.qrBox}>
+      <View style={boxStyle}>
         {React.createElement('div', {
           style: { width: '100%', height: '100%' },
           dangerouslySetInnerHTML: { __html: svgHtml },
@@ -199,7 +211,7 @@ export const PrototypeQrCode: React.FC<PrototypeQrCodeProps> = ({ seed }) => {
   }
 
   return (
-    <View style={styles.qrBox}>
+    <View style={boxStyle}>
       <View style={styles.qrInner}>
         {matrix.map((row, y) => (
           <View key={y} style={styles.qrRow}>

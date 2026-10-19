@@ -17,24 +17,39 @@ import { LiveTvScreen } from './src/screens/LiveTvScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { TravelScreen } from './src/screens/TravelScreen';
 import { VodScreen } from './src/screens/VodScreen';
-import { PlayerSheet, RegisterSheet } from './src/components/VideoPlayerModal';
+import {
+  FullscreenQrModal,
+  MerchantDetailSheet,
+  NotificationInboxSheet,
+  OnboardingSheet,
+  PlayerSheet,
+  RegisterSheet,
+  SlideOutDrawer,
+} from './src/components/VideoPlayerModal';
 import { YouTubePlayerModal } from './src/components/YouTubePlayerModal';
 import { YouTubeVideoItem } from '@ilc/shared';
 import {
   HUBS,
+  INITIAL_CONTINUE_WATCHING,
+  INITIAL_NOTIFICATIONS,
   INITIAL_VIDEOS,
+  NotificationItem,
   PROTOTYPE_THEMES,
   PrototypeFeedback,
+  PrototypeMerchant,
   PrototypeTab,
   PrototypeTravelQuery,
   PrototypeVideo,
   ThemeMode,
+  VideoCategoryFilter,
+  WatchHistoryItem,
 } from './src/constants/prototypeTheme';
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>('dark');
   const [tab, setTab] = useState<PrototypeTab>('home');
 
+  // Member & Auth State
   const [reg, setReg] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,9 +57,32 @@ export default function App() {
     text: 'Free coffee at a partner café',
     days: 7,
   });
-  const [fb, setFb] = useState<PrototypeFeedback[]>([]);
-  const [city, setCity] = useState('All');
+
+  // First-launch Onboarding & Navigation Drawers/Sheets
+  const [onboardingOpen, setOnboardingOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+
+  // Video Catalog, Categories & Continue Watching State
   const [vids] = useState<PrototypeVideo[]>(INITIAL_VIDEOS);
+  const [selectedCategory, setSelectedCategory] =
+    useState<VideoCategoryFilter>('All');
+  const [continueWatching, setContinueWatching] = useState<WatchHistoryItem[]>(
+    INITIAL_CONTINUE_WATCHING
+  );
+  const [activeVideo, setActiveVideo] = useState<PrototypeVideo | null>(null);
+
+  // Rewards, Merchant Detail & Fullscreen Cashier QR State
+  const [city, setCity] = useState('All');
+  const [selectedMerchant, setSelectedMerchant] =
+    useState<PrototypeMerchant | null>(null);
+  const [fullscreenQrOpen, setFullscreenQrOpen] = useState(false);
+  const [qrMerchantContext, setQrMerchantContext] = useState<
+    string | undefined
+  >(undefined);
+
+  // Travel State
   const [travelQuery, setTravelQuery] = useState<PrototypeTravelQuery>({
     type: 'Flights',
     from: 'Bacolod (BCD)',
@@ -52,22 +90,33 @@ export default function App() {
     date: '',
   });
   const [searched, setSearched] = useState(false);
+
+  // Profile, Notification Toggles, Inbox & Feedback State
+  const [geoAlertsEnabled, setGeoAlertsEnabled] = useState(true);
+  const [announcementsEnabled, setAnnouncementsEnabled] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(
+    INITIAL_NOTIFICATIONS
+  );
+  const [fb, setFb] = useState<PrototypeFeedback[]>([]);
   const [rating, setRating] = useState(0);
-  const [playerIndex, setPlayerIndex] = useState<number | null>(null);
+  const [hub, setHub] = useState<string>(HUBS[0]);
   const [selectedYouTubeVideo, setSelectedYouTubeVideo] =
     useState<YouTubeVideoItem | null>(null);
-  const [registerOpen, setRegisterOpen] = useState(false);
   const [toast, setToast] = useState<{ title: string; msg: string } | null>(
     null
   );
-  const [hub, setHub] = useState('Bacolod-Silay Airport');
 
   const scrollRef = useRef<ScrollView>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const t = PROTOTYPE_THEMES[theme];
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const pushToast = (title: string, msg: string) => {
+  const pushToast = (
+    title: string,
+    msg: string,
+    notifType: 'geo' | 'announcement' = 'announcement'
+  ) => {
     setToast({ title, msg });
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
@@ -75,6 +124,19 @@ export default function App() {
     toastTimerRef.current = setTimeout(() => {
       setToast(null);
     }, 6000);
+
+    // Record in Notification Inbox
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        type: notifType,
+        title,
+        msg,
+        time: 'Just now',
+        read: false,
+      },
+      ...prev,
+    ]);
   };
 
   useEffect(() => {
@@ -87,6 +149,7 @@ export default function App() {
 
   const handleSelectTab = (nextTab: PrototypeTab) => {
     setTab(nextTab);
+    setSelectedMerchant(null);
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
 
@@ -102,21 +165,47 @@ export default function App() {
     setEmail(finalEmail);
     setReg(true);
     setRegisterOpen(false);
+    setOnboardingOpen(false);
     setTab('rewards');
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     pushToast(
       `Welcome, ${finalName.split(' ')[0]}!`,
-      `Your gift: ${gift.text}.`
+      `Your gift: ${gift.text}.`,
+      'announcement'
     );
   };
 
+  const handleUpdateWatchProgress = (videoId: string, progress: number) => {
+    setContinueWatching((prev) => {
+      const existing = prev.filter((item) => item.videoId !== videoId);
+      const remainingPct = Math.max(1, 100 - progress);
+      const minsLeft = Math.max(1, Math.round((remainingPct / 100) * 5));
+      return [
+        {
+          videoId,
+          progress: Math.min(98, Math.max(15, progress)),
+          lastWatched: `${minsLeft}m left`,
+        },
+        ...existing,
+      ];
+    });
+  };
+
   const handleSimulateGeo = () => {
-    const destCity = HUBS[hub] || 'Bacolod';
+    if (!geoAlertsEnabled) {
+      setToast({
+        title: 'Geo alerts paused',
+        msg: 'Enable Geo arrival alerts in Notifications to receive airport partner offers.',
+      });
+      return;
+    }
+    const destCity = hub || 'Bacolod';
     pushToast(
       `Welcome to ${destCity}!`,
       reg
         ? 'Show your ILC card for 5% off at partner merchants.'
-        : 'Join free and claim your welcome gift.'
+        : 'Join free and claim your welcome gift.',
+      'geo'
     );
   };
 
@@ -129,6 +218,10 @@ export default function App() {
     setRating(0);
     pushToast('Thank you', 'Your feedback went to the ILC team.');
   };
+
+  const activeWatchProgress = activeVideo
+    ? continueWatching.find((c) => c.videoId === activeVideo.id)?.progress || 15
+    : 0;
 
   return (
     <SafeAreaView
@@ -159,9 +252,13 @@ export default function App() {
           onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           isRegistered={reg}
           memberEmail={email}
+          unreadNotificationsCount={unreadCount}
+          onOpenDrawer={() => setDrawerOpen(true)}
+          onOpenInbox={() => setInboxOpen(true)}
           onPressMember={() => {
             if (reg) {
-              handleSelectTab('rewards');
+              setQrMerchantContext(undefined);
+              setFullscreenQrOpen(true);
             } else {
               setRegisterOpen(true);
             }
@@ -184,7 +281,10 @@ export default function App() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 } as any),
             ]}
-            onPress={() => setToast(null)}
+            onPress={() => {
+              setToast(null);
+              setInboxOpen(true);
+            }}
             activeOpacity={0.9}
           >
             <Text style={[styles.bannerHeader, { color: t.bannerText }]}>
@@ -208,21 +308,20 @@ export default function App() {
             <HomeScreen
               theme={theme}
               videos={vids}
+              continueWatching={continueWatching}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
               isRegistered={reg}
               memberName={name}
               gift={gift}
-              onPlayVideo={(idx) => setPlayerIndex(idx)}
+              onPlayVideo={(vid) => setActiveVideo(vid)}
               onOpenRegister={() => setRegisterOpen(true)}
               onSelectYouTubeVideo={(video) => setSelectedYouTubeVideo(video)}
             />
           )}
 
           {tab === 'live' && (
-            <WatchScreen
-              theme={theme}
-              onSelectVideo={(video) => setSelectedYouTubeVideo(video)}
-              onPushToast={pushToast}
-            />
+            <LiveTvScreen theme={theme} onPushToast={pushToast} />
           )}
 
           {tab === 'rewards' && (
@@ -235,7 +334,14 @@ export default function App() {
               city={city}
               onSelectCity={setCity}
               onOpenRegister={() => setRegisterOpen(true)}
-              onPushToast={pushToast}
+              onSelectMerchant={(m) => setSelectedMerchant(m)}
+              onOpenFullscreenQr={(mName) => {
+                setQrMerchantContext(mName);
+                setFullscreenQrOpen(true);
+              }}
+              onPushToast={(title, msg) =>
+                pushToast(title, msg, 'announcement')
+              }
             />
           )}
 
@@ -249,7 +355,9 @@ export default function App() {
                 if (reset) setSearched(false);
               }}
               onSearch={() => setSearched(true)}
-              onPushToast={pushToast}
+              onPushToast={(title, msg) =>
+                pushToast(title, msg, 'announcement')
+              }
             />
           )}
 
@@ -262,12 +370,22 @@ export default function App() {
               isRegistered={reg}
               memberName={name}
               memberEmail={email}
+              geoAlertsEnabled={geoAlertsEnabled}
+              onToggleGeoAlerts={() => setGeoAlertsEnabled((v) => !v)}
+              announcementsEnabled={announcementsEnabled}
+              onToggleAnnouncements={() => setAnnouncementsEnabled((v) => !v)}
               onOpenRegister={() => setRegisterOpen(true)}
+              onOpenInbox={() => setInboxOpen(true)}
+              onOpenOnboarding={() => setOnboardingOpen(true)}
+              onOpenFullscreenQr={() => {
+                setQrMerchantContext(undefined);
+                setFullscreenQrOpen(true);
+              }}
               onSignOut={() => {
                 setReg(false);
                 setName('');
                 setEmail('');
-                pushToast('Signed out', 'You have signed out of your account.');
+                pushToast('Logged out', 'You have logged out of your account.');
               }}
               rating={rating}
               onChangeRating={setRating}
@@ -276,10 +394,52 @@ export default function App() {
               feedbackList={fb}
               onSubmitFeedback={handleSubmitFeedback}
               onSimulateGeo={handleSimulateGeo}
-              onPushToast={pushToast}
+              onPushToast={(title, msg) =>
+                pushToast(title, msg, 'announcement')
+              }
             />
           )}
         </ScrollView>
+
+        {/* Merchant Detail Sheet */}
+        {selectedMerchant && (
+          <MerchantDetailSheet
+            theme={theme}
+            merchant={selectedMerchant}
+            isRegistered={reg}
+            onClose={() => setSelectedMerchant(null)}
+            onShowCashierQr={(mName) => {
+              setQrMerchantContext(mName);
+              setFullscreenQrOpen(true);
+            }}
+            onOpenRegister={() => setRegisterOpen(true)}
+          />
+        )}
+
+        {/* Notification Inbox Sheet */}
+        {inboxOpen && (
+          <NotificationInboxSheet
+            theme={theme}
+            notifications={notifications}
+            onMarkAllRead={() =>
+              setNotifications((prev) =>
+                prev.map((n) => ({ ...n, read: true }))
+              )
+            }
+            onSelectNotification={(item) => {
+              setNotifications((prev) =>
+                prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+              );
+              setInboxOpen(false);
+              if (item.type === 'geo') {
+                handleSelectTab('rewards');
+              } else {
+                handleSelectTab('home');
+              }
+            }}
+            onClose={() => setInboxOpen(false)}
+          />
+        )}
 
         {/* Registration Modal Sheet */}
         {registerOpen && (
@@ -291,12 +451,50 @@ export default function App() {
         )}
 
         {/* Video Player Modal Sheet */}
-        {playerIndex !== null && vids[playerIndex] && (
+        {activeVideo && (
           <PlayerSheet
             theme={theme}
-            video={vids[playerIndex]}
-            index={playerIndex}
-            onClose={() => setPlayerIndex(null)}
+            video={activeVideo}
+            index={activeVideo.sceneIndex}
+            initialProgress={activeWatchProgress}
+            onUpdateProgress={handleUpdateWatchProgress}
+            onClose={() => setActiveVideo(null)}
+          />
+        )}
+
+        {/* Fullscreen Cashier QR Modal */}
+        {fullscreenQrOpen && (
+          <FullscreenQrModal
+            theme={theme}
+            memberName={name}
+            memberEmail={email}
+            merchantName={qrMerchantContext}
+            onClose={() => setFullscreenQrOpen(false)}
+          />
+        )}
+
+        {/* First-Launch Onboarding Welcome Sheet */}
+        {onboardingOpen && (
+          <OnboardingSheet
+            theme={theme}
+            giftText={gift.text}
+            onRegister={handleRegister}
+            onSkip={() => setOnboardingOpen(false)}
+          />
+        )}
+
+        {/* Slide-Out Hamburger Navigation Drawer */}
+        {drawerOpen && (
+          <SlideOutDrawer
+            theme={theme}
+            onClose={() => setDrawerOpen(false)}
+            onNavigateCategory={(cat) => {
+              setSelectedCategory(cat);
+              handleSelectTab('home');
+            }}
+            onNavigateTab={(nextTab) => handleSelectTab(nextTab)}
+            onOpenInbox={() => setInboxOpen(true)}
+            onOpenOnboarding={() => setOnboardingOpen(true)}
           />
         )}
 
@@ -351,7 +549,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderWidth: 1,
-    zIndex: 5,
+    zIndex: 15,
   },
   bannerHeader: {
     fontSize: 13,

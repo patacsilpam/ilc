@@ -3,16 +3,41 @@ import { Platform } from 'react-native';
 export type ThemeMode = 'dark' | 'light';
 export type PrototypeTab = 'home' | 'live' | 'rewards' | 'travel' | 'more';
 
+export type VideoCategoryFilter =
+  | 'All'
+  | 'Explore'
+  | 'Food'
+  | 'Hotels & Resorts'
+  | 'Festivals'
+  | 'Philippines'
+  | 'International';
+
 export interface PrototypeVideo {
+  id: string;
   t: string;
   m: string;
+  category: 'Explore' | 'Food' | 'Hotels & Resorts' | 'Festivals';
+  region: 'Philippines' | 'International';
+  sceneIndex: number;
   videoUrl?: string;
 }
 
+export interface WatchHistoryItem {
+  videoId: string;
+  progress: number; // 0 to 100
+  lastWatched: string;
+}
+
 export interface PrototypeMerchant {
+  id: string;
   n: string;
   c: string;
   t: string;
+  address: string;
+  hours: string;
+  offer: string;
+  description: string;
+  sceneIndex: number;
 }
 
 export interface PrototypeFeedback {
@@ -28,22 +53,215 @@ export interface PrototypeTravelQuery {
   date: string;
 }
 
+export interface NotificationItem {
+  id: string;
+  type: 'geo' | 'announcement';
+  title: string;
+  msg: string;
+  time: string;
+  read: boolean;
+}
+
+export const VIDEO_CATEGORIES: VideoCategoryFilter[] = [
+  'All',
+  'Explore',
+  'Food',
+  'Hotels & Resorts',
+  'Festivals',
+];
+
 export const INITIAL_VIDEOS: PrototypeVideo[] = [
-  { t: 'Siquijor: island of slow days', m: '6:20', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
-  { t: 'Street food crawl in Iloilo', m: '4:45', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
-  { t: 'Cebu by ferry, island to island', m: '8:10', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
-  { t: 'Weekend in Bacolod: sweets and sunsets', m: '5:30', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4' },
-  { t: 'Hidden beaches of Guimaras', m: '3:55', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4' },
-  { t: 'Dive day at Mactan', m: '7:05', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4' },
+  {
+    id: 'vid-1',
+    t: 'Siquijor: island of slow days',
+    m: '6:20',
+    category: 'Explore',
+    region: 'Philippines',
+    sceneIndex: 0,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  },
+  {
+    id: 'vid-2',
+    t: 'Street food crawl in Iloilo',
+    m: '4:45',
+    category: 'Food',
+    region: 'Philippines',
+    sceneIndex: 1,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  },
+  {
+    id: 'vid-3',
+    t: 'Cebu by ferry, island to island',
+    m: '8:10',
+    category: 'Explore',
+    region: 'Philippines',
+    sceneIndex: 2,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  },
+  {
+    id: 'vid-4',
+    t: 'Weekend in Bacolod: sweets and sunsets',
+    m: '5:30',
+    category: 'Festivals',
+    region: 'Philippines',
+    sceneIndex: 3,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  },
+  {
+    id: 'vid-5',
+    t: 'Hidden beaches of Guimaras',
+    m: '3:55',
+    category: 'Hotels & Resorts',
+    region: 'Philippines',
+    sceneIndex: 4,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  },
+  {
+    id: 'vid-6',
+    t: 'Dive day at Mactan',
+    m: '7:05',
+    category: 'Hotels & Resorts',
+    region: 'Philippines',
+    sceneIndex: 5,
+    videoUrl:
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+  },
+  {
+    id: 'vid-7',
+    t: 'MassKara Festival: City of Smiles after dark',
+    m: '9:15',
+    category: 'Festivals',
+    region: 'Philippines',
+    sceneIndex: 3,
+  },
+  {
+    id: 'vid-8',
+    t: 'Bali & Lombok: Coastal sanctuaries across the sea',
+    m: '11:40',
+    category: 'Hotels & Resorts',
+    region: 'International',
+    sceneIndex: 0,
+  },
+];
+
+export const INITIAL_CONTINUE_WATCHING: WatchHistoryItem[] = [
+  { videoId: 'vid-2', progress: 64, lastWatched: '2m left' },
+  { videoId: 'vid-5', progress: 38, lastWatched: '2m 25s left' },
 ];
 
 export const MERCHANTS: PrototypeMerchant[] = [
-  { n: 'Harbor Roast Café', c: 'Bacolod', t: 'Coffee' },
-  { n: 'Punta Taza Grill', c: 'Bacolod', t: 'Dining' },
-  { n: 'Sugarlands Boutique Inn', c: 'Iloilo', t: 'Stay' },
-  { n: 'Molo Weekend Market', c: 'Iloilo', t: 'Shopping' },
-  { n: 'Sunrise Island Tours', c: 'Cebu', t: 'Tours' },
-  { n: 'Mactan Dive Hub', c: 'Cebu', t: 'Activities' },
+  {
+    id: 'merch-1',
+    n: 'Harbor Roast Café',
+    c: 'Bacolod',
+    t: 'Coffee',
+    address: '21st Lacson Street, Bacolod City, Negros Occidental',
+    hours: 'Daily · 6:30 AM – 10:00 PM',
+    offer: '5% off all espresso & specialty brews + Welcome Gift redemption partner',
+    description:
+      'Artisanal single-origin Negros highland coffee roasted in small batches, paired with warm piaya and coastal pastries.',
+    sceneIndex: 0,
+  },
+  {
+    id: 'merch-2',
+    n: 'Punta Taza Grill',
+    c: 'Bacolod',
+    t: 'Dining',
+    address: 'Pala-Pala Coastal Walk, Bacolod City, Negros Occidental',
+    hours: 'Tue – Sun · 11:00 AM – 11:00 PM',
+    offer: '5% off total dining bill with your ILC Digital Member Card',
+    description:
+      'Open-air sunset grill serving authentic chicken inasal,charcoal-grilled blue marlin, and fresh Guimaras mango salads.',
+    sceneIndex: 3,
+  },
+  {
+    id: 'merch-3',
+    n: 'Sugarlands Boutique Inn',
+    c: 'Iloilo',
+    t: 'Stay',
+    address: 'General Luna Heritage District, Iloilo City',
+    hours: 'Front Desk · 24 Hours (Check-in 2:00 PM)',
+    offer: '5% off best available room rate + complimentary welcome drink',
+    description:
+      'Restored heritage courtyard sanctuary blending colonial Visayan architecture with tranquil tropical gardens.',
+    sceneIndex: 4,
+  },
+  {
+    id: 'merch-4',
+    n: 'Molo Weekend Market',
+    c: 'Iloilo',
+    t: 'Shopping',
+    address: 'Molo Plaza Artisan Arcade, Iloilo City',
+    hours: 'Fri – Sun · 8:00 AM – 8:00 PM',
+    offer: '5% off hablon weaves, tablea cacao, and curated island crafts',
+    description:
+      'Handwoven hablon textiles, heirloom Panay delicacies, and coastal homeware crafted by local Visayan artisans.',
+    sceneIndex: 1,
+  },
+  {
+    id: 'merch-5',
+    n: 'Sunrise Island Tours',
+    c: 'Cebu',
+    t: 'Tours',
+    address: 'Pier 1 Marina Terminal, Cebu City',
+    hours: 'Daily · 5:30 AM – 6:00 PM',
+    offer: '5% off private island-hopping charters & marine sanctuary passes',
+    description:
+      'Guided outrigger and speedboat expeditions across Nalusuan, Gilutongan, and Olango Island marine sanctuaries.',
+    sceneIndex: 2,
+  },
+  {
+    id: 'merch-6',
+    n: 'Mactan Dive Hub',
+    c: 'Cebu',
+    t: 'Activities',
+    address: 'Punta Engaño Coastal Road, Lapu-Lapu City, Mactan',
+    hours: 'Daily · 7:00 AM – 7:00 PM',
+    offer: '5% off PADI fun dives, nitrox fills, and reef gear rental',
+    description:
+      'PADI 5-Star dive center offering guided wall dives, house reef snorkeling, and underwater photography excursions.',
+    sceneIndex: 5,
+  },
+];
+
+export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'notif-1',
+    type: 'geo',
+    title: 'Welcome to Bacolod!',
+    msg: 'Touchdown at Bacolod-Silay Airport. Show your ILC card for 5% off at Harbor Roast Café and Punta Taza Grill.',
+    time: 'Just now',
+    read: false,
+  },
+  {
+    id: 'notif-2',
+    type: 'announcement',
+    title: 'New Episode Premiere',
+    msg: 'Siquijor: island of slow days is now streaming in Watch.',
+    time: '2 hours ago',
+    read: false,
+  },
+  {
+    id: 'notif-3',
+    type: 'geo',
+    title: 'Welcome to Cebu!',
+    msg: 'Near Mactan-Cebu Airport: Enjoy 5% off island charters with Sunrise Island Tours.',
+    time: 'Yesterday',
+    read: true,
+  },
+  {
+    id: 'notif-4',
+    type: 'announcement',
+    title: 'Live Tonight at 7:00 PM',
+    msg: 'MassKara street dance broadcasts live from Bacolod on Live TV.',
+    time: '2 days ago',
+    read: true,
+  },
 ];
 
 export const HUBS: Record<string, string> = {
@@ -112,7 +330,8 @@ export const PROTOTYPE_THEMES = {
     chipOnText: '#06240F',
     promoBorder: 'rgba(201,220,63,0.4)',
     promoBg: 'rgba(201,220,63,0.09)',
-    promoGradient: 'linear-gradient(160deg,rgba(201,220,63,0.14),rgba(201,220,63,0.02))',
+    promoGradient:
+      'linear-gradient(160deg,rgba(201,220,63,0.14),rgba(201,220,63,0.02))',
     inputBg: 'rgba(255,255,255,0.05)',
     inputBorder: 'rgba(255,255,255,0.1)',
     giftBg: 'rgba(255,255,255,0.03)',
@@ -155,7 +374,8 @@ export const PROTOTYPE_THEMES = {
     chipOnText: '#FFFFFF',
     promoBorder: 'rgba(11,106,46,0.35)',
     promoBg: 'rgba(201,220,63,0.18)',
-    promoGradient: 'linear-gradient(160deg,rgba(201,220,63,0.3),rgba(201,220,63,0.05))',
+    promoGradient:
+      'linear-gradient(160deg,rgba(201,220,63,0.3),rgba(201,220,63,0.05))',
     inputBg: '#F3F7F0',
     inputBorder: 'rgba(6,36,15,0.14)',
     giftBg: '#F3F7F0',
@@ -176,7 +396,9 @@ export const PROTOTYPE_THEMES = {
 
 export function computeMemberId(email: string): string {
   const clean = email || 'guest';
-  const num = clean.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 90000, 10000);
+  const num = clean
+    .split('')
+    .reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 90000, 10000);
   return `ILC-${num}`;
 }
 
@@ -196,7 +418,12 @@ export function generateQrMatrix(seed: string): boolean[][] {
       if (f(x, y)) {
         const a = x > 13 ? x - 14 : x;
         const b = y > 13 ? y - 14 : y;
-        on = a === 0 || a === 6 || b === 0 || b === 6 || (a > 1 && a < 5 && b > 1 && b < 5);
+        on =
+          a === 0 ||
+          a === 6 ||
+          b === 0 ||
+          b === 6 ||
+          (a > 1 && a < 5 && b > 1 && b < 5);
       } else {
         h = (Math.imul(h, 1103515245) + 12345) >>> 0;
         on = Boolean((h >>> 16) & 1);
@@ -208,7 +435,6 @@ export function generateQrMatrix(seed: string): boolean[][] {
   return matrix;
 }
 
-// Exact SVG generators from Island Living Channel – Phase 1 Prototype.html
 const gr = (id: string, a: string, b: string) =>
   `<linearGradient id='${id}' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient>`;
 
@@ -247,16 +473,11 @@ export const SC: (() => string)[] = [
     `<g fill='#9be8ff' opacity='.12'><path d='M30 0H42L24 100H0Z'/><path d='M70 0H84L66 100H40Z'/><path d='M110 0H120L110 100H84Z'/></g><g fill='#ffb347'><ellipse cx='60' cy='40' rx='9' ry='5'/><path d='M69 40L77 35V45Z'/></g><g fill='#ff6f91'><ellipse cx='108' cy='28' rx='6' ry='3.5'/><path d='M114 28L120 24V32Z'/></g><g fill='#ffe066'><ellipse cx='36' cy='62' rx='5' ry='3'/><path d='M41 62L46 59V65Z'/></g><g fill='#e8575d'><circle cx='14' cy='94' r='9'/><circle cx='34' cy='97' r='8'/><circle cx='120' cy='95' r='10'/></g><g fill='#ffb347'><circle cx='70' cy='98' r='9'/><circle cx='150' cy='96' r='8'/></g><g fill='none' stroke='#fff' opacity='.4'><circle cx='80' cy='60' r='2'/><circle cx='84' cy='50' r='1.4'/><circle cx='78' cy='44' r='1'/></g>`,
 ];
 
-export function getSceneSvgDataUri(index: number): string {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100' preserveAspectRatio='xMidYMid slice'>${SC[index % 6]()}</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g, '%27')}`;
-}
-
 export const IC: Record<PrototypeTab, string> = {
   home: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5l5 2.5-5 2.5z"/>',
   live: '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M4.9 4.9a10 10 0 000 14.2M19.1 4.9a10 10 0 010 14.2"/>',
-  rewards: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C9.5 8 8 7 8 5.5S9.5 3 12 8zM12 8c2.5 0 4-1 4-2.5S14.5 3 12 8z"/>',
+  rewards:
+    '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C9.5 8 8 7 8 5.5S9.5 3 12 8zM12 8c2.5 0 4-1 4-2.5S14.5 3 12 8z"/>',
   travel: '<path d="M21 3L3 10.5l7 2.5 2.5 7z"/><path d="M10 13L21 3"/>',
   more: '<path d="M4 7h16M4 12h16M4 17h16"/>',
 };
-

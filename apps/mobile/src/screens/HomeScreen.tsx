@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  TextInput,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import {
   H1,
   H2,
@@ -16,13 +18,16 @@ import {
   MuteText,
   PromoBox,
   ProtoButton,
+  ProtoChip,
 } from '../components/PrototypePrimitives';
 import { VideoCard } from '../components/VideoCard';
 import {
+  PROTOTYPE_THEMES,
   PrototypeVideo,
   ThemeMode,
-  PROTOTYPE_THEMES,
-  SERIF_FONT,
+  VIDEO_CATEGORIES,
+  VideoCategoryFilter,
+  WatchHistoryItem,
 } from '../constants/prototypeTheme';
 import { YouTubeVideoItem } from '@ilc/shared';
 import { youtubeService } from '../services/youtube';
@@ -30,10 +35,13 @@ import { youtubeService } from '../services/youtube';
 interface HomeScreenProps {
   theme: ThemeMode;
   videos: PrototypeVideo[];
+  continueWatching: WatchHistoryItem[];
+  selectedCategory: VideoCategoryFilter;
+  onSelectCategory: (cat: VideoCategoryFilter) => void;
   isRegistered: boolean;
   memberName: string;
   gift: { text: string; days: number };
-  onPlayVideo: (index: number) => void;
+  onPlayVideo: (video: PrototypeVideo) => void;
   onOpenRegister: () => void;
   onSelectYouTubeVideo?: (video: YouTubeVideoItem) => void;
 }
@@ -41,6 +49,9 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   theme,
   videos,
+  continueWatching,
+  selectedCategory,
+  onSelectCategory,
   isRegistered,
   memberName,
   gift,
@@ -49,11 +60,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectYouTubeVideo,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
+  const [searchQuery, setSearchQuery] = useState('');
+
   const firstName = (memberName || 'Juan').split(' ')[0];
-  const featured = videos[0] || {
-    t: 'Siquijor: island of slow days',
-    m: '6:20',
-  };
+  const featured = videos[0];
+
+  const filteredVideos = videos.filter((v) => {
+    const matchesCat =
+      selectedCategory === 'All' ||
+      v.category === selectedCategory ||
+      v.region === selectedCategory;
+    const matchesSearch =
+      !searchQuery.trim() ||
+      v.t.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+      v.category.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesCat && matchesSearch;
+  });
+
+  const continueItems = continueWatching
+    .map((cw) => {
+      const vid = videos.find((v) => v.id === cw.videoId);
+      return vid ? { video: vid, ...cw } : null;
+    })
+    .filter(Boolean) as (WatchHistoryItem & { video: PrototypeVideo })[];
 
   const [ytVideos, setYtVideos] = useState<YouTubeVideoItem[]>([]);
   const [ytShorts, setYtShorts] = useState<YouTubeVideoItem[]>([]);
@@ -88,16 +117,69 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         Travel and lifestyle films, live events and member rewards.
       </MuteText>
 
-      {/* Featured Hero Story */}
-      <VideoCard
-        video={featured}
-        index={0}
-        onPress={() => onPlayVideo(0)}
-        theme={theme}
-        layout="hero"
-      />
+      {/* Search Bar */}
+      <View
+        style={[
+          styles.searchBar,
+          {
+            backgroundColor: t.inputBg,
+            borderColor: t.inputBorder,
+          },
+        ]}
+      >
+        <Feather name="search" size={16} color={t.mute} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search Explore, Food, Resorts, Festivals..."
+          placeholderTextColor={t.mute}
+          style={[styles.searchInput, { color: t.ink }]}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Feather name="x-circle" size={16} color={t.mute} />
+          </TouchableOpacity>
+        )}
+      </View>
 
-      {/* Free Registration Promo */}
+      {/* Video Category Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipsScroll}
+      >
+        {VIDEO_CATEGORIES.map((cat) => (
+          <ProtoChip
+            key={cat}
+            theme={theme}
+            label={cat}
+            active={selectedCategory === cat}
+            onPress={() => onSelectCategory(cat)}
+          />
+        ))}
+        {(selectedCategory === 'Philippines' ||
+          selectedCategory === 'International') && (
+          <ProtoChip
+            theme={theme}
+            label={`${selectedCategory} ✕`}
+            active
+            onPress={() => onSelectCategory('All')}
+          />
+        )}
+      </ScrollView>
+
+      {/* Featured Hero Video */}
+      {featured && selectedCategory === 'All' && !searchQuery.trim() && (
+        <VideoCard
+          video={featured}
+          index={0}
+          onPress={() => onPlayVideo(featured)}
+          theme={theme}
+          layout="hero"
+        />
+      )}
+
+      {/* Welcome Gift Promo Banner */}
       {!isRegistered && (
         <PromoBox theme={theme} style={{ marginTop: 16 }}>
           <H3 theme={theme}>Join free, get a welcome gift</H3>
@@ -111,6 +193,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             onPress={onOpenRegister}
           />
         </PromoBox>
+      )}
+
+      {/* Continue Watching Row */}
+      {continueItems.length > 0 && !searchQuery.trim() && (
+        <View>
+          <H2 theme={theme}>Continue watching</H2>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingRight: 8 }}
+          >
+            {continueItems.map((item, idx) => (
+              <VideoCard
+                key={item.video.id}
+                video={item.video}
+                index={idx}
+                onPress={() => onPlayVideo(item.video)}
+                theme={theme}
+                layout="continue"
+                progress={item.progress}
+                resumeLabel={item.lastWatched}
+              />
+            ))}
+          </ScrollView>
+        </View>
       )}
 
       {/* DEDICATED YOUTUBE SHORTS SECTION (Portrait Rectangle Cards) */}
@@ -252,20 +359,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </View>
       )}
 
-      {/* Catch Up Original Films */}
-      <H2 theme={theme} style={{ marginTop: 24 }}>Catch up</H2>
-      <View style={styles.grid}>
-        {videos.map((v, i) => (
-          <VideoCard
-            key={`${v.t}-${i}`}
-            video={v}
-            index={i}
-            onPress={() => onPlayVideo(i)}
+      {/* Catch Up / Filtered Video Grid */}
+      <H2 theme={theme}>
+        {selectedCategory === 'All' ? 'Catch up' : selectedCategory}
+      </H2>
+
+      {filteredVideos.length > 0 ? (
+        <View style={styles.grid}>
+          {filteredVideos.map((v, i) => (
+            <VideoCard
+              key={v.id}
+              video={v}
+              index={i}
+              onPress={() => onPlayVideo(v)}
+              theme={theme}
+              layout="grid"
+            />
+          ))}
+        </View>
+      ) : (
+        <PromoBox theme={theme}>
+          <H3 theme={theme}>No matching episodes</H3>
+          <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 10 }}>
+            Try clearing your search or selecting another category.
+          </MuteText>
+          <ProtoButton
             theme={theme}
-            layout="grid"
+            alt
+            label="Reset filters"
+            onPress={() => {
+              setSearchQuery('');
+              onSelectCategory('All');
+            }}
           />
-        ))}
-      </View>
+        </PromoBox>
+      )}
     </View>
   );
 };
@@ -276,7 +404,27 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 8,
-    marginBottom: 20,
+    marginBottom: 14,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14.5,
+    paddingVertical: 0,
+  },
+  chipsScroll: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
   },
   promoSub: {
     marginTop: 4,

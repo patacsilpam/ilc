@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  Platform,
-} from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { MembershipCardView } from '../components/MembershipCardView';
-import { PrototypeQrCode } from '../components/PrototypeArtwork';
 import {
   H1,
   H2,
@@ -21,9 +14,9 @@ import {
 import {
   MERCHANTS,
   PROTOTYPE_THEMES,
+  PrototypeMerchant,
   ThemeMode,
   computeMemberId,
-  SERIF_FONT,
 } from '../constants/prototypeTheme';
 
 interface ProfileScreenProps {
@@ -35,6 +28,8 @@ interface ProfileScreenProps {
   city: string;
   onSelectCity: (city: string) => void;
   onOpenRegister: () => void;
+  onSelectMerchant: (merchant: PrototypeMerchant) => void;
+  onOpenFullscreenQr: (merchantName?: string) => void;
   onPushToast: (title: string, msg: string) => void;
 }
 
@@ -49,20 +44,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   city,
   onSelectCity,
   onOpenRegister,
+  onSelectMerchant,
+  onOpenFullscreenQr,
   onPushToast,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
-  const [selectedMerchant, setSelectedMerchant] = useState<{
-    name: string;
-    type: string;
-    city: string;
-  } | null>(null);
-  const [showFullCardModal, setShowFullCardModal] = useState<boolean>(false);
-
   const filteredMerchants = MERCHANTS.filter(
     (m) => city === 'All' || m.c === city
   );
-
   const memberId = computeMemberId(memberEmail);
 
   return (
@@ -72,12 +61,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         Exclusive perks, digital pass, and member welcome gifts.
       </MuteText>
 
-      {/* Primary Membership Card section */}
       {!isRegistered ? (
         <PromoBox theme={theme} style={{ marginTop: 14 }}>
           <H3 theme={theme}>Your digital membership card lives here</H3>
           <MuteText theme={theme} style={styles.promoSub}>
-            Register free to claim your digital green card, welcome gifts, and 5% discount across partner hubs.
+            Register free to claim your digital green card, welcome gifts, and
+            5% discount across partner hubs.
           </MuteText>
           <ProtoButton
             theme={theme}
@@ -89,20 +78,37 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       ) : (
         <View style={styles.cardSection}>
           <View style={styles.cardSectionHeader}>
-            <Text style={[styles.sectionTitle, { color: t.ink }]}>My Digital Card</Text>
-            <TouchableOpacity onPress={() => setShowFullCardModal(true)}>
-              <Text style={[styles.expandText, { color: t.tabOnColor }]}>View QR</Text>
+            <Text style={[styles.sectionTitle, { color: t.ink }]}>
+              My Digital Card
+            </Text>
+            <TouchableOpacity onPress={() => onOpenFullscreenQr()}>
+              <Text style={[styles.expandText, { color: t.tabOnColor }]}>
+                View Fullscreen QR
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Interactive green card inspired by the Grab payment card */}
           <MembershipCardView
             name={memberName}
             email={memberEmail}
             theme={theme}
             interactive
-            onPress={() => setShowFullCardModal(true)}
+            onPress={() => onOpenFullscreenQr()}
           />
+
+          <TouchableOpacity
+            style={[
+              styles.fullscreenQrHint,
+              { borderColor: t.line, backgroundColor: t.inputBg },
+            ]}
+            onPress={() => onOpenFullscreenQr()}
+            activeOpacity={0.8}
+          >
+            <Feather name="maximize-2" size={14} color={t.brand} />
+            <Text style={[styles.fullscreenQrHintText, { color: t.ink }]}>
+              Tap card to open Fullscreen Cashier QR
+            </Text>
+          </TouchableOpacity>
 
           <View
             style={[
@@ -134,12 +140,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </View>
       )}
 
-      {/* Partner Merchants Section */}
       <H2 theme={theme} style={{ marginTop: 24, marginBottom: 4 }}>
         Partner merchants · 5% off with your card
       </H2>
       <MuteText theme={theme} style={{ marginBottom: 12 }}>
-        Tap any merchant to present your digital membership pass.
+        Tap any merchant to view address, hours, and present your membership
+        pass.
       </MuteText>
 
       <View style={styles.chipsRow}>
@@ -154,143 +160,36 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         ))}
       </View>
 
-      {filteredMerchants.map((m) => {
-        const isSelected = selectedMerchant?.name === m.n;
-
-        return (
-          <View
-            key={m.n}
-            style={[
-              styles.merchantRowContainer,
-              { borderBottomColor: t.line },
-            ]}
-          >
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.merchantName, { color: t.ink }]}>{m.n}</Text>
-                <MuteText theme={theme}>
-                  {m.t} · {m.c}
-                </MuteText>
-              </View>
-
-              <ProtoButton
-                theme={theme}
-                alt={!isSelected}
-                label={
-                  !isRegistered
-                    ? 'Join'
-                    : isSelected
-                    ? 'Hide card'
-                    : 'Show card'
-                }
-                onPress={() => {
-                  if (!isRegistered) {
-                    onOpenRegister();
-                  } else {
-                    if (isSelected) {
-                      setSelectedMerchant(null);
-                    } else {
-                      setSelectedMerchant({ name: m.n, type: m.t, city: m.c });
-                      onPushToast('Pass Presented', `Show your green card at ${m.n} for 5% off.`);
-                    }
-                  }
-                }}
-              />
-            </View>
-
-            {/* In-line reveal of the digital card right underneath the merchant */}
-            {isRegistered && isSelected && (
-              <View
-                style={[
-                  styles.inlineCardWrap,
-                  {
-                    backgroundColor: t.surf,
-                    borderColor: '#00B14F',
-                  },
-                ]}
-              >
-                <View style={styles.inlineHeaderRow}>
-                  <Text style={[styles.inlineMerchantTitle, { color: t.ink }]}>
-                    Presenting Pass at {m.n}
-                  </Text>
-                  <Text style={styles.inlineDiscountBadge}>5% DISCOUNT APPLIED</Text>
-                </View>
-
-                {/* The actual vibrant green card */}
-                <MembershipCardView
-                  name={memberName}
-                  email={memberEmail}
-                  theme={theme}
-                  interactive
-                  onPress={() => setShowFullCardModal(true)}
-                />
-
-                <Text style={[styles.inlineInstruction, { color: t.mute }]}>
-                  Present this QR code or Member ID <Text style={{ fontWeight: '700', color: t.ink }}>{memberId}</Text> to the cashier before payment.
-                </Text>
-              </View>
-            )}
-          </View>
-        );
-      })}
-
-      {/* Full-screen QR / Pass Modal */}
-      {showFullCardModal && (
-        <Modal
-          visible={showFullCardModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowFullCardModal(false)}
+      {filteredMerchants.map((m) => (
+        <TouchableOpacity
+          key={m.id}
+          style={[styles.row, { borderBottomColor: t.line }]}
+          onPress={() => onSelectMerchant(m)}
+          activeOpacity={0.75}
         >
-          <View style={styles.modalBackdrop}>
-            <View
-              style={[
-                styles.modalContent,
-                { backgroundColor: t.phoneBg, borderColor: t.line },
-                Platform.OS === 'web' &&
-                  ({ boxShadow: '0 24px 48px rgba(0,0,0,0.6)' } as any),
-              ]}
-            >
-              <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, { color: t.ink, fontFamily: SERIF_FONT }]}>
-                  Digital Membership Pass
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowFullCardModal(false)}
-                  style={styles.modalCloseBtn}
-                >
-                  <Text style={[styles.modalCloseText, { color: t.ink }]}>✕</Text>
-                </TouchableOpacity>
-              </View>
-
-              <MembershipCardView
-                name={memberName}
-                email={memberEmail}
-                theme={theme}
-              />
-
-              <View style={styles.qrEnlargedCard}>
-                <Text style={[styles.qrEnlargedTitle, { color: t.ink }]}>Scan at Counter</Text>
-                <View style={styles.qrLargeBox}>
-                  <PrototypeQrCode seed={memberEmail} />
-                </View>
-                <Text style={styles.qrIdText}>{memberId}</Text>
-                <MuteText theme={theme} style={styles.qrInstruction}>
-                  Eligible for 5% discount at all Island Living partner establishments.
-                </MuteText>
-              </View>
-
-              <ProtoButton
-                theme={theme}
-                label="Done"
-                full
-                onPress={() => setShowFullCardModal(false)}
-                style={{ marginTop: 16 }}
-              />
+          <View style={{ flex: 1 }}>
+            <View style={styles.merchantHeaderRow}>
+              <Text style={[styles.merchantName, { color: t.ink }]}>{m.n}</Text>
+              <Feather name="chevron-right" size={15} color={t.mute} />
             </View>
+            <MuteText theme={theme}>
+              {m.t} · {m.c} · {m.hours.split('·')[1]?.trim() || m.hours}
+            </MuteText>
           </View>
-        </Modal>
-      )}
+          <ProtoButton
+            theme={theme}
+            alt
+            label={isRegistered ? 'Show card' : 'View'}
+            onPress={() => {
+              if (isRegistered) {
+                onOpenFullscreenQr(m.n);
+              } else {
+                onSelectMerchant(m);
+              }
+            }}
+          />
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
@@ -324,6 +223,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+  fullscreenQrHint: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  fullscreenQrHintText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
   giftCard: {
     marginTop: 12,
     borderRadius: 20,
@@ -345,114 +259,22 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
   },
-  merchantRowContainer: {
-    borderBottomWidth: 1,
-    paddingVertical: 14,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  merchantHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   merchantName: {
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 2,
-  },
-  inlineCardWrap: {
-    marginTop: 14,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    padding: 14,
-  },
-  inlineHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  inlineMerchantTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  inlineDiscountBadge: {
-    backgroundColor: '#00B14F',
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 99,
-  },
-  inlineInstruction: {
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 420,
-    borderRadius: 26,
-    borderWidth: 1,
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  modalCloseBtn: {
-    padding: 6,
-  },
-  modalCloseText: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  qrEnlargedCard: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-  },
-  qrEnlargedTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  qrLargeBox: {
-    padding: 10,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  qrIdText: {
-    color: '#064E3B',
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-  },
-  qrInstruction: {
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop: 6,
   },
 });
