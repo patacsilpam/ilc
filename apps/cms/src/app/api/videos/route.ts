@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { getUserFromRequest, requireAdmin } from '@/lib/auth';
 import { validateVideoInput } from '@ilc/shared';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
