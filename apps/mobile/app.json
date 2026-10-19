@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Island Living",
-    "slug": "island-living",
+    "slug": "island-living-channel-digital",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/brand/ilc-logo.png",
@@ -13,7 +13,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.martinsoft.islandliving"
+      "bundleIdentifier": "com.martinsoft.islandliving",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,8 +27,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "island-living-digital"
+        "projectId": "f6dac64c-f53f-4806-ab9b-3143a0e16e2a"
       }
-    }
+    },
+    "owner": "haroldmartins-organization"
   }
 }
