@@ -12,11 +12,14 @@ import {
 import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { WatchScreen } from './src/screens/WatchScreen';
 import { LiveTvScreen } from './src/screens/LiveTvScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { TravelScreen } from './src/screens/TravelScreen';
 import { VodScreen } from './src/screens/VodScreen';
 import { PlayerSheet, RegisterSheet } from './src/components/VideoPlayerModal';
+import { YouTubePlayerModal } from './src/components/YouTubePlayerModal';
+import { YouTubeVideoItem } from '@ilc/shared';
 import {
   HUBS,
   INITIAL_VIDEOS,
@@ -51,6 +54,8 @@ export default function App() {
   const [searched, setSearched] = useState(false);
   const [rating, setRating] = useState(0);
   const [playerIndex, setPlayerIndex] = useState<number | null>(null);
+  const [selectedYouTubeVideo, setSelectedYouTubeVideo] =
+    useState<YouTubeVideoItem | null>(null);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [toast, setToast] = useState<{ title: string; msg: string } | null>(
     null
@@ -208,11 +213,16 @@ export default function App() {
               gift={gift}
               onPlayVideo={(idx) => setPlayerIndex(idx)}
               onOpenRegister={() => setRegisterOpen(true)}
+              onSelectYouTubeVideo={(video) => setSelectedYouTubeVideo(video)}
             />
           )}
 
           {tab === 'live' && (
-            <LiveTvScreen theme={theme} onPushToast={pushToast} />
+            <WatchScreen
+              theme={theme}
+              onSelectVideo={(video) => setSelectedYouTubeVideo(video)}
+              onPushToast={pushToast}
+            />
           )}
 
           {tab === 'rewards' && (
@@ -287,6 +297,15 @@ export default function App() {
             video={vids[playerIndex]}
             index={playerIndex}
             onClose={() => setPlayerIndex(null)}
+          />
+        )}
+
+        {/* Official YouTube Video / Shorts Player Modal Sheet */}
+        {selectedYouTubeVideo && (
+          <YouTubePlayerModal
+            theme={theme}
+            video={selectedYouTubeVideo}
+            onClose={() => setSelectedYouTubeVideo(null)}
           />
         )}
 

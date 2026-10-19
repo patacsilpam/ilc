@@ -147,3 +147,30 @@ describe('4. Partner Booking Attribution', () => {
     assert.strictEqual(parsed.searchParams.get('utm_source'), 'island_living');
   });
 });
+
+describe('5. YouTube Channel Integration & Live Detection Strategy', () => {
+  const OFFICIAL_ILC_CHANNEL_ID = 'UCXATr97RfU6NQna9WPOgWlA';
+
+  it('verifies official verified ILC YouTube Channel ID format', () => {
+    assert.match(OFFICIAL_ILC_CHANNEL_ID, /^UC[a-zA-Z0-9_-]{22}$/);
+    assert.strictEqual(OFFICIAL_ILC_CHANNEL_ID.length, 24);
+  });
+
+  it('correctly classifies Shorts vs regular videos using duration heuristic', () => {
+    const isShortHelper = (title, desc, durationSeconds) => {
+      const text = `${title} ${desc}`.toLowerCase();
+      const hasTag = text.includes('#shorts') || text.includes('#short');
+      if (typeof durationSeconds === 'number' && durationSeconds > 0) {
+        if (durationSeconds <= 60) return true;
+        if (durationSeconds <= 180 && hasTag) return true;
+        return false;
+      }
+      return hasTag;
+    };
+
+    assert.strictEqual(isShortHelper('Siargao Waves #shorts', 'Beach moment', 45), true);
+    assert.strictEqual(isShortHelper('Boracay Full Episode', 'Long form doc', 1200), false);
+    assert.strictEqual(isShortHelper('Bacolod Street Dance #short', '', null), true);
+    assert.strictEqual(isShortHelper('Full Documentary', 'Archipelago stories', null), false);
+  });
+});

@@ -33,12 +33,15 @@ Document exact limitations after inspecting the actual installed Expo SDK. Do no
 - Do not promise reliable geofencing while running only in Expo Go.
 - Avoid excessive location collection and do not retain location history unless necessary and approved.
 
-## YouTube Live
-- Use supported YouTube embed/player functionality and a configurable channel/stream ID.
-- Verify embedding is allowed for the selected stream.
-- Provide an offline/unavailable state and a fallback link.
-- Do not scrape YouTube pages or use undocumented APIs.
-- YouTube API credentials, if needed, must be restricted and managed appropriately.
+## YouTube Channel & Live Integration
+- **Official Channel**: https://www.youtube.com/@islandlivingchannel1087
+- **Verified Channel ID**: `UCXATr97RfU6NQna9WPOgWlA`
+- **Architecture**:
+  - CMS route `/api/youtube` handles both Google YouTube Data API v3 and official public Atom/RSS feed fallback.
+  - Server-side secrets: `YOUTUBE_API_KEY` is maintained strictly in backend environment variables (`.env`), never bundled into client apps.
+  - Live Stream detection: Queries YouTube Data API `eventType=live` / `eventType=upcoming` or canonical channel `/live` probe to prevent false live status labeling.
+  - Shorts identification: Filtered via exact duration analysis (<= 60s / <= 180s with #shorts) and hashtag parsing.
+  - Playback: Uses official YouTube iframe player (`https://www.youtube.com/embed/{id}`) with `modestbranding=1`, `rel=0`, and `playsinline=1` complying with YouTube's Terms of Service and brand requirements.
 
 ## Otamigo booking
 Before claiming full integration, obtain:
