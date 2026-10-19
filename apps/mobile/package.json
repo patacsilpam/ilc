@@ -15,7 +15,6 @@
     "@ilc/shared": "file:../../packages/shared",
     "expo": "~51.0.28",
     "expo-status-bar": "~1.12.1",
-    "island-living-digital": "file:../..",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
