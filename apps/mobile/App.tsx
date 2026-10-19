@@ -455,7 +455,7 @@ export default function App() {
           <PlayerSheet
             theme={theme}
             video={activeVideo}
-            index={activeVideo.sceneIndex}
+            index={activeVideo.sceneIndex ?? 0}
             initialProgress={activeWatchProgress}
             onUpdateProgress={handleUpdateWatchProgress}
             onClose={() => setActiveVideo(null)}

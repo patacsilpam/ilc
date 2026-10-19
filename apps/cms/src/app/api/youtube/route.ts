@@ -4,6 +4,7 @@ import {
   YouTubeVideoItem,
   YouTubeLiveStatus,
 } from '@ilc/shared';
+import realYoutubeData from '../../../../data/realYoutubeContent.json';
 
 export const dynamic = 'force-dynamic';
 
@@ -388,13 +389,64 @@ async function fetchFromYouTubeFeedFallback(channelId: string): Promise<YouTubeW
     console.warn('[ILC YouTube Fallback] Live stream probe error:', liveErr);
   }
 
-  const videos = allItems.filter((v) => !v.isShort);
-  const shorts = allItems.filter((v) => v.isShort);
+  const parsedVideos = allItems.filter((v) => !v.isShort);
+  const parsedShorts = allItems.filter((v) => v.isShort);
+
+  // Combine live RSS feed items with the comprehensive scraped ILC channel catalog
+  const scrapedVideos: YouTubeVideoItem[] = (realYoutubeData.videos as any[]).map((v: any) => ({
+    id: v.id,
+    title: v.title,
+    description: '',
+    publishedAt: v.publishedTime || 'Recently added',
+    thumbnailUrl: v.thumbnail,
+    durationFormatted: v.duration || 'Feature',
+    isShort: false,
+    videoUrl: v.videoUrl,
+    embedUrl: v.embedUrl,
+  }));
+
+  const scrapedShorts: YouTubeVideoItem[] = (realYoutubeData.shorts as any[]).map((s: any) => ({
+    id: s.id,
+    title: s.title,
+    description: s.viewCount || '',
+    publishedAt: '',
+    thumbnailUrl: s.thumbnail,
+    durationFormatted: 'Short',
+    isShort: true,
+    videoUrl: s.videoUrl,
+    embedUrl: s.embedUrl,
+  }));
+
+  // Deduplicate by ID
+  const videoMap = new Map<string, YouTubeVideoItem>();
+  for (const v of [...parsedVideos, ...scrapedVideos]) {
+    if (v.id && !videoMap.has(v.id)) videoMap.set(v.id, v);
+  }
+
+  const shortMap = new Map<string, YouTubeVideoItem>();
+  for (const s of [...parsedShorts, ...scrapedShorts]) {
+    if (s.id && !shortMap.has(s.id)) shortMap.set(s.id, s);
+  }
+
+  // Ensure live status has real ILC cruise stream if none active
+  if (!liveStatus.isLive && realYoutubeData.streams[0]) {
+    const st = realYoutubeData.streams[0];
+    liveStatus = {
+      isLive: false,
+      videoId: st.id,
+      title: st.title,
+      description: 'Official Island Living Channel Livestream broadcast',
+      thumbnailUrl: st.thumbnail,
+      embedUrl: st.embedUrl,
+      channelTitle: 'Island Living Channel',
+      channelId,
+    };
+  }
 
   return {
     live: liveStatus,
-    videos,
-    shorts,
+    videos: Array.from(videoMap.values()),
+    shorts: Array.from(shortMap.values()),
     nextPageToken: null,
     source: 'feed_fallback',
     channelId,

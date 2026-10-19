@@ -17,6 +17,7 @@ import {
   ProtoButton,
 } from '../components/PrototypePrimitives';
 import { YouTubeEmbed } from '../components/YouTubeEmbed';
+import { ShortsCard } from '../components/ShortsCard';
 import {
   PROTOTYPE_THEMES,
   SERIF_FONT,
@@ -27,7 +28,12 @@ import {
   YouTubeVideoItem,
   YouTubeLiveStatus,
 } from '@ilc/shared';
-import { youtubeService, ILC_CHANNEL_HANDLE, ILC_CHANNEL_URL } from '../services/youtube';
+import {
+  youtubeService,
+  fallbackWatchData,
+  ILC_CHANNEL_HANDLE,
+  ILC_CHANNEL_URL,
+} from '../services/youtube';
 
 interface WatchScreenProps {
   theme: ThemeMode;
@@ -42,10 +48,10 @@ export const WatchScreen: React.FC<WatchScreenProps> = ({
 }) => {
   const t = PROTOTYPE_THEMES[theme];
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [watchData, setWatchData] = useState<YouTubeWatchResponse | null>(null);
+  const [watchData, setWatchData] = useState<YouTubeWatchResponse | null>(fallbackWatchData);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
@@ -113,17 +119,21 @@ export const WatchScreen: React.FC<WatchScreenProps> = ({
 
   const renderLiveSection = (live: YouTubeLiveStatus | undefined) => {
     const isLive = !!live?.isLive;
-    if (isLive && live) {
+    if (live && live.videoId) {
       return (
         <View style={styles.liveSectionCard}>
           <View style={styles.liveHeaderRow}>
-            <View style={styles.redBadge}>
-              <View style={styles.liveBlinkDot} />
-              <Text style={styles.redBadgeText}>LIVE NOW</Text>
+            <View style={isLive ? styles.redBadge : [styles.redBadge, { backgroundColor: '#0284c7' }]}>
+              <View style={isLive ? styles.liveBlinkDot : [styles.liveBlinkDot, { backgroundColor: '#38bdf8' }]} />
+              <Text style={styles.redBadgeText}>{isLive ? 'LIVE NOW' : 'LIVESTREAM BROADCAST'}</Text>
             </View>
-            <Text style={[styles.channelLabel, { color: t.ink }]}>
-              {live.channelTitle || 'Island Living Channel'}
-            </Text>
+            <TouchableOpacity
+              style={[styles.youtubeBtn, { borderColor: t.line }]}
+              onPress={() => Linking.openURL(ILC_CHANNEL_URL).catch(() => {})}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.youtubeBtnText, { color: t.tabOnColor }]}>Subscribe</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[
@@ -132,10 +142,10 @@ export const WatchScreen: React.FC<WatchScreenProps> = ({
             ]}
           >
             <YouTubeEmbed
-              embedUrl={live.embedUrl || `https://www.youtube.com/embed/${live.videoId}?autoplay=1`}
+              embedUrl={live.embedUrl || `https://www.youtube.com/embed/${live.videoId}`}
               title={live.title || 'ILC Live Stream'}
               aspectRatio={16 / 9}
-              autoPlay
+              autoPlay={false}
             />
           </View>
           <Text style={[styles.liveTitle, { color: t.ink, fontFamily: SERIF_FONT }]}>
@@ -293,45 +303,23 @@ export const WatchScreen: React.FC<WatchScreenProps> = ({
         ) : (
           <>
             <MuteText theme={theme} style={styles.shortsSub}>
-              Bite-sized island moments — shot vertical.
+              Bite-sized island moments in 9:16 vertical format.
             </MuteText>
-            <View style={styles.shortsGrid}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 10, paddingRight: 16 }}
+            >
               {shorts.map((item) => (
-                <TouchableOpacity
+                <ShortsCard
                   key={item.id}
-                  style={[
-                    styles.shortCard,
-                    { backgroundColor: t.surf, borderColor: t.line },
-                    Platform.OS === 'web' && ({ boxShadow: '0 8px 20px rgba(0,0,0,0.28)' } as any),
-                  ]}
-                  onPress={() => onSelectVideo(item)}
-                  activeOpacity={0.88}
-                >
-                  <View style={styles.shortThumbWrapper}>
-                    <Image source={{ uri: item.thumbnailUrl }} style={styles.shortThumb} resizeMode="cover" />
-                    <View style={styles.shortsBadge}>
-                      <Text style={styles.shortsBadgeText}>Shorts</Text>
-                    </View>
-                    <View style={styles.shortPlayOverlay}>
-                      <View style={styles.shortPlayCircle}>
-                        <Text style={styles.shortPlayIcon}>▶</Text>
-                      </View>
-                    </View>
-                    {item.durationFormatted ? (
-                      <View style={[styles.durationBadge, styles.shortDurationBadge]}>
-                        <Text style={styles.durationText}>{item.durationFormatted}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <View style={styles.shortInfo}>
-                    <Text style={[styles.shortTitle, { color: t.ink }]} numberOfLines={2}>{item.title}</Text>
-                    <MuteText theme={theme} style={styles.shortDate}>
-                      {new Date(item.publishedAt).toLocaleDateString()}
-                    </MuteText>
-                  </View>
-                </TouchableOpacity>
+                  item={item}
+                  theme={theme}
+                  onPress={onSelectVideo}
+                  width={150}
+                />
               ))}
-            </View>
+            </ScrollView>
           </>
         )}
       </View>
