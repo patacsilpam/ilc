@@ -207,7 +207,7 @@ export const RegisterSheet: React.FC<RegisterSheetProps> = ({
 };
 
 /* ============================================================================
- * 3. ONBOARDING SHEET (Airport-to-Download Journey + 3 Benefits + Free Sign-Up)
+ * 3. ONBOARDING SCREEN (Editorial Welcome & Free Sign-Up)
  * ========================================================================== */
 interface OnboardingSheetProps {
   theme: ThemeMode;
@@ -218,28 +218,31 @@ interface OnboardingSheetProps {
 
 const ONBOARDING_STEPS = [
   {
-    badge: '1 · WATCH',
-    icon: 'tv' as const,
+    number: '01',
+    label: 'Watch',
     scene: 0,
-    title: 'From airport gate to island stories',
+    caption: 'Bacolod · Iloilo · Cebu · Boracay',
+    title: 'Stories from the islands, wherever you land.',
     subtitle:
-      'Scanned our QR at Bacolod-Silay, Iloilo, or Mactan-Cebu Airport? Stream original island films, culinary crawls, and live festivals while you travel.',
+      'From airport arrival gates to your hotel room—stream original Philippine travel films, food trails, and our 24/7 live channel.',
   },
   {
-    badge: '2 · REWARDS',
-    icon: 'gift' as const,
+    number: '02',
+    label: 'Rewards',
     scene: 4,
-    title: 'Instant digital card & welcome gift',
+    caption: 'Digital Member Card',
+    title: 'One card for island cafés, dining & stays.',
     subtitle:
-      'Your free digital membership card unlocks a complimentary welcome coffee and 5% off at partner cafés, restaurants, and boutique stays.',
+      'Members receive a complimentary welcome coffee and 5% off at partner restaurants, cafés, and resorts—just show your QR code.',
   },
   {
-    badge: '3 · BOOK',
-    icon: 'send' as const,
+    number: '03',
+    label: 'Book',
     scene: 2,
-    title: 'Book flights, ferries & stays',
+    caption: 'In partnership with Otamigo',
+    title: 'Plan flights, ferries, and coastal stays.',
     subtitle:
-      'Plan island-to-island hops and resort stays through our partner Otamigo right inside the app, with member perks built in.',
+      'Search inter-island flights, fastcraft schedules, and curated hotels in one place, with member perks applied.',
   },
 ];
 
@@ -255,185 +258,157 @@ export const OnboardingSheet: React.FC<OnboardingSheetProps> = ({
   const [email, setEmail] = useState('');
 
   const isSignUpStep = step >= ONBOARDING_STEPS.length;
-  const currentSlide = ONBOARDING_STEPS[Math.min(step, ONBOARDING_STEPS.length - 1)];
+  const currentSlide =
+    ONBOARDING_STEPS[Math.min(step, ONBOARDING_STEPS.length - 1)];
 
   return (
-    <ScrollView
-      style={[styles.sheetScroll, { backgroundColor: t.sheetBg }]}
-      contentContainerStyle={styles.sheetScrollContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={[styles.onboardScreen, { backgroundColor: t.phoneBg }]}>
+      {/* Minimal Header: Logo + Plain Text Skip */}
       <View style={styles.onboardTopBar}>
         <BrandLogo small theme={theme} />
-        <TouchableOpacity onPress={onSkip} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={onSkip}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={[styles.skipText, { color: t.mute }]}>Skip</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Airport-to-Download Journey Pill */}
-      <View
-        style={[
-          styles.journeyBanner,
-          { backgroundColor: t.inputBg, borderColor: t.line },
-        ]}
+      {/* Main Content */}
+      <ScrollView
+        style={styles.onboardBodyScroll}
+        contentContainerStyle={styles.onboardBodyContent}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.journeyStep}>
-          <Feather name="airplay" size={12} color={t.brand} />
-          <Text style={[styles.journeyText, { color: t.ink }]}>
-            Airport QR
-          </Text>
-        </View>
-        <Feather name="arrow-right" size={12} color={t.mute} />
-        <View style={styles.journeyStep}>
-          <Feather name="download" size={12} color={t.brand} />
-          <Text style={[styles.journeyText, { color: t.ink }]}>
-            App Launch
-          </Text>
-        </View>
-        <Feather name="arrow-right" size={12} color={t.mute} />
-        <View style={styles.journeyStep}>
-          <Feather name="award" size={12} color={t.brand} />
-          <Text style={[styles.journeyText, { color: t.brand, fontWeight: '700' }]}>
-            Free VIP Card
-          </Text>
-        </View>
-      </View>
+        {!isSignUpStep ? (
+          <View style={styles.onboardSlideContainer}>
+            {/* Uncluttered Editorial Artwork */}
+            <SceneBackground
+              index={currentSlide.scene}
+              overlayGradient="hero"
+              style={styles.onboardHero}
+            >
+              <Text style={styles.onboardHeroCaption}>
+                {currentSlide.number} — {currentSlide.label} ·{' '}
+                {currentSlide.caption}
+              </Text>
+            </SceneBackground>
 
-      {!isSignUpStep ? (
-        <View>
-          <SceneBackground
-            index={currentSlide.scene}
-            overlayGradient="hero"
-            style={styles.onboardHero}
-          >
-            <View style={styles.onboardHeroInner}>
-              <View style={styles.onboardBadge}>
-                <Text style={styles.onboardBadgeText}>
-                  {currentSlide.badge}
-                </Text>
-              </View>
-              <Text style={[styles.onboardHeroTitle, { fontFamily: SERIF_FONT }]}>
+            {/* Editorial Headline & Calm Body Copy */}
+            <View style={styles.onboardTextSection}>
+              <Text
+                style={[
+                  styles.onboardMainTitle,
+                  { color: t.ink, fontFamily: SERIF_FONT },
+                ]}
+              >
                 {currentSlide.title}
               </Text>
+              <MuteText theme={theme} style={styles.onboardDesc}>
+                {currentSlide.subtitle}
+              </MuteText>
             </View>
-          </SceneBackground>
-
-          <MuteText theme={theme} style={styles.onboardDesc}>
-            {currentSlide.subtitle}
-          </MuteText>
-
-          {/* 3 Benefits Quick Summary Pills */}
-          <View style={styles.benefitPillsRow}>
-            {['Watch Films', '5% Partner Card', 'Book Otamigo'].map(
-              (lbl, idx) => (
-                <TouchableOpacity
-                  key={lbl}
-                  style={[
-                    styles.benefitMiniCard,
-                    {
-                      borderColor: step === idx ? t.brand : t.line,
-                      backgroundColor: step === idx ? t.tabOnBg : t.inputBg,
-                    },
-                  ]}
-                  onPress={() => setStep(idx)}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.benefitMiniText,
-                      {
-                        color: step === idx ? t.brand : t.mute,
-                        fontWeight: step === idx ? '700' : '500',
-                      },
-                    ]}
-                  >
-                    {idx + 1}. {lbl}
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
           </View>
+        ) : (
+          /* Step 4: Clean Editorial Sign-Up */
+          <View style={styles.onboardSlideContainer}>
+            <Text style={[styles.onboardEyebrow, { color: t.brand }]}>
+              Free Membership
+            </Text>
+            <Text
+              style={[
+                styles.onboardMainTitle,
+                { color: t.ink, fontFamily: SERIF_FONT },
+              ]}
+            >
+              Join Island Living
+            </Text>
+            <MuteText theme={theme} style={styles.onboardDesc}>
+              Create a free account to unlock your digital member QR card, 5%
+              partner discount, and welcome gift ({giftText.toLowerCase()}).
+            </MuteText>
 
+            <View style={{ marginTop: 22 }}>
+              <FieldLabel theme={theme}>Full name</FieldLabel>
+              <ProtoInput
+                theme={theme}
+                value={name}
+                onChangeText={setName}
+                placeholder="Juan dela Cruz"
+              />
+
+              <FieldLabel theme={theme}>Email</FieldLabel>
+              <ProtoInput
+                theme={theme}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                keyboardType="email-address"
+              />
+
+              <ProtoButton
+                theme={theme}
+                label="Create free account"
+                full
+                onPress={() => onRegister(name, email, false)}
+                style={{ marginTop: 6, marginBottom: 8 }}
+              />
+
+              <ProtoButton
+                theme={theme}
+                alt
+                full
+                label="Continue with Google"
+                onPress={() => onRegister(name, email, true)}
+              />
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Minimal Bottom Bar: Subtle Dots + Clean Action */}
+      <View style={styles.onboardBottomFooter}>
+        <View style={styles.onboardDotsRow}>
+          {[0, 1, 2, 3].map((idx) => {
+            const active = step === idx;
+            return (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => setStep(idx)}
+                hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                style={[
+                  styles.onboardDot,
+                  {
+                    width: active ? 20 : 6,
+                    backgroundColor: active ? t.brand : t.line,
+                  },
+                ]}
+              />
+            );
+          })}
+        </View>
+
+        {!isSignUpStep ? (
           <ProtoButton
             theme={theme}
-            label={
-              step < ONBOARDING_STEPS.length - 1
-                ? 'Next benefit'
-                : 'Claim free card & welcome gift'
-            }
+            label={step < ONBOARDING_STEPS.length - 1 ? 'Next' : 'Get started'}
             full
             onPress={() => setStep(step + 1)}
-            style={{ marginTop: 14 }}
           />
-
-          <ProtoButton
-            theme={theme}
-            alt
-            full
-            label="Browse app first"
-            onPress={onSkip}
-            style={{ marginTop: 8 }}
-          />
-        </View>
-      ) : (
-        <View>
-          <H1 theme={theme}>Claim your free welcome gift</H1>
-          <MuteText theme={theme} style={{ marginTop: 6, marginBottom: 12 }}>
-            Register free to get your digital card, 5% partner discount, and{' '}
-            <Text style={{ color: t.brand, fontWeight: '700' }}>
-              {giftText.toLowerCase()}
+        ) : (
+          <TouchableOpacity
+            style={styles.onboardGuestLink}
+            onPress={() => setStep(0)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.onboardGuestLinkText, { color: t.mute }]}>
+              Back to overview
             </Text>
-            .
-          </MuteText>
-
-          <FieldLabel theme={theme}>Full name</FieldLabel>
-          <ProtoInput
-            theme={theme}
-            value={name}
-            onChangeText={setName}
-            placeholder="Juan dela Cruz"
-          />
-
-          <FieldLabel theme={theme}>Email</FieldLabel>
-          <ProtoInput
-            theme={theme}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            keyboardType="email-address"
-          />
-
-          <ProtoButton
-            theme={theme}
-            label="Create free account"
-            full
-            onPress={() => onRegister(name, email, false)}
-            style={{ marginBottom: 8 }}
-          />
-
-          <ProtoButton
-            theme={theme}
-            alt
-            full
-            label="Continue with Google"
-            onPress={() => onRegister(name, email, true)}
-          />
-
-          <View style={styles.onboardFooterBtns}>
-            <ProtoChip
-              theme={theme}
-              label="← Back to benefits"
-              onPress={() => setStep(0)}
-            />
-            <ProtoChip
-              theme={theme}
-              label="Skip for now"
-              onPress={onSkip}
-            />
-          </View>
-        </View>
-      )}
-    </ScrollView>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 };
 
@@ -1106,43 +1081,55 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: '700',
   },
+  onboardScreen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  onboardTopContainer: {
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
   onboardTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    paddingTop: 18,
+    paddingHorizontal: 22,
+    paddingBottom: 12,
   },
   skipText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  journeyBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginBottom: 14,
+  onboardBodyScroll: {
+    flex: 1,
   },
-  journeyStep: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  onboardBodyContent: {
+    paddingHorizontal: 22,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
-  journeyText: {
-    fontSize: 11.5,
+  onboardSlideContainer: {
+    flexDirection: 'column',
   },
   onboardHero: {
-    minHeight: 230,
-    borderRadius: 26,
+    minHeight: 290,
+    borderRadius: 24,
     padding: 20,
-  },
-  onboardHeroInner: {
-    flex: 1,
     justifyContent: 'flex-end',
-    gap: 6,
+  },
+  onboardHeroCaption: {
+    color: 'rgba(255,255,255,0.86)',
+    fontSize: 12.5,
+    fontWeight: '500',
+    letterSpacing: 0.3,
   },
   onboardBadge: {
     alignSelf: 'flex-start',
@@ -1163,31 +1150,48 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     fontWeight: '500',
   },
+  onboardTextSection: {
+    marginTop: 26,
+  },
+  onboardEyebrow: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  onboardMainTitle: {
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: '500',
+    letterSpacing: -0.4,
+  },
   onboardDesc: {
-    marginTop: 14,
-    fontSize: 14,
-    lineHeight: 20,
+    marginTop: 10,
+    fontSize: 15,
+    lineHeight: 22,
   },
-  benefitPillsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 14,
-  },
-  benefitMiniCard: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 12,
-    borderWidth: 1,
+  onboardGuestLink: {
     alignItems: 'center',
+    paddingVertical: 10,
   },
-  benefitMiniText: {
-    fontSize: 11,
+  onboardGuestLinkText: {
+    fontSize: 13.5,
+    fontWeight: '500',
   },
-  onboardFooterBtns: {
+  onboardBottomFooter: {
+    paddingHorizontal: 22,
+    paddingTop: 12,
+    paddingBottom: 24,
+    gap: 16,
+  },
+  onboardDotsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  onboardDot: {
+    height: 6,
+    borderRadius: 3,
   },
   backBtn: {
     alignSelf: 'flex-start',

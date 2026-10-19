@@ -507,12 +507,14 @@ export default function App() {
           />
         )}
 
-        {/* Floating Glass Bottom Navigation */}
-        <BottomNav
-          currentTab={tab}
-          onSelectTab={handleSelectTab}
-          theme={theme}
-        />
+        {/* Floating Glass Bottom Navigation (hidden during full-screen Onboarding / Cashier QR) */}
+        {!onboardingOpen && !fullscreenQrOpen && (
+          <BottomNav
+            currentTab={tab}
+            onSelectTab={handleSelectTab}
+            theme={theme}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
