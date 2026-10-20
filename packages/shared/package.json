@@ -9,9 +9,6 @@
     "build": "tsc",
     "test": "node --test dist/utils/index.test.js"
   },
-  "dependencies": {
-    "island-living-digital": "file:../.."
-  },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "typescript": "^5.4.5"

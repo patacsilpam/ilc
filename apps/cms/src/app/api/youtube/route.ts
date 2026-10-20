@@ -5,6 +5,8 @@ import {
   YouTubeLiveStatus,
 } from '@ilc/shared';
 
+export const dynamic = 'force-dynamic';
+
 // Official verified Channel ID for @islandlivingchannel1087
 const OFFICIAL_ILC_CHANNEL_ID = 'UCXATr97RfU6NQna9WPOgWlA';
 const OFFICIAL_ILC_HANDLE = '@islandlivingchannel1087';

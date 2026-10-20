@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { getUserFromRequest, requireAdmin } from '@/lib/auth';
 import { validateWelcomeGiftInput } from '@ilc/shared';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);

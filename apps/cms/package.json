@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
+    "prebuild": "npm run --prefix ../../packages/shared build",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
@@ -12,7 +13,6 @@
   "dependencies": {
     "@ilc/shared": "file:../../packages/shared",
     "@supabase/supabase-js": "^2.45.0",
-    "island-living-digital": "file:../..",
     "next": "^14.2.15",
     "react": "18.2.0",
     "react-dom": "18.2.0"
@@ -22,5 +22,9 @@
     "@types/react": "~18.2.45",
     "@types/react-dom": "~18.2.19",
     "typescript": "^5.4.5"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }
