@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
 const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: 20,
-    paddingTop: 14,
+    paddingTop: 14, 
   },
   topRow: {
     flexDirection: 'row',
