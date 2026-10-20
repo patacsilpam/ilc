@@ -2,32 +2,26 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BrandLogo, BrandStripe } from './PrototypeArtwork';
-import {
-  PROTOTYPE_THEMES,
-  ThemeMode,
-  computeMemberId,
-} from '../constants/prototypeTheme';
+import { PROTOTYPE_THEMES, ThemeMode } from '../constants/prototypeTheme';
 
 interface HeaderProps {
   theme: ThemeMode;
-  onToggleTheme: () => void;
-  isRegistered: boolean;
-  memberEmail: string;
+  onToggleTheme?: () => void;
+  isRegistered?: boolean;
+  memberEmail?: string;
   unreadNotificationsCount: number;
-  onPressMember: () => void;
+  onPressMember?: () => void;
   onOpenDrawer: () => void;
   onOpenInbox: () => void;
+  onOpenSettings: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   theme,
-  onToggleTheme,
-  isRegistered,
-  memberEmail,
   unreadNotificationsCount,
-  onPressMember,
   onOpenDrawer,
   onOpenInbox,
+  onOpenSettings,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
 
@@ -36,18 +30,13 @@ export const Header: React.FC<HeaderProps> = ({
       <View style={styles.topRow}>
         <View style={styles.leftRow}>
           <TouchableOpacity
-            style={[
-              styles.iconBtn,
-              {
-                borderColor: t.line,
-                backgroundColor: t.inputBg,
-              },
-            ]}
+            style={styles.iconBtn}
             onPress={onOpenDrawer}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             accessibilityLabel="Open navigation menu"
           >
-            <Feather name="menu" size={18} color={t.ink} />
+            <Feather name="menu" size={20} color={t.ink} />
           </TouchableOpacity>
 
           <BrandLogo theme={theme} />
@@ -55,39 +44,13 @@ export const Header: React.FC<HeaderProps> = ({
 
         <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={[
-              styles.memberPill,
-              {
-                borderColor: t.btnAltBorder,
-                backgroundColor: isRegistered ? t.tabOnBg : 'transparent',
-              },
-            ]}
-            onPress={onPressMember}
-            activeOpacity={0.8}
-          >
-            <Feather
-              name={isRegistered ? 'credit-card' : 'user-plus'}
-              size={12}
-              color={t.btnAltColor}
-            />
-            <Text style={[styles.memberPillText, { color: t.btnAltColor }]}>
-              {isRegistered ? computeMemberId(memberEmail) : 'Join Free'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.iconBtn,
-              {
-                borderColor: t.line,
-                backgroundColor: t.inputBg,
-              },
-            ]}
+            style={styles.iconBtn}
             onPress={onOpenInbox}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             accessibilityLabel="Open notification inbox"
           >
-            <Feather name="bell" size={16} color={t.ink} />
+            <Feather name="bell" size={19} color={t.ink} />
             {unreadNotificationsCount > 0 && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadBadgeText}>
@@ -98,22 +61,13 @@ export const Header: React.FC<HeaderProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.iconBtn,
-              {
-                borderColor: t.line,
-                backgroundColor: t.inputBg,
-              },
-            ]}
-            onPress={onToggleTheme}
-            activeOpacity={0.8}
-            accessibilityLabel="Switch light or dark mode"
+            style={styles.iconBtn}
+            onPress={onOpenSettings}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Open settings"
           >
-            <Feather
-              name={theme === 'light' ? 'moon' : 'sun'}
-              size={16}
-              color={t.ink}
-            />
+            <Feather name="settings" size={19} color={t.ink} />
           </TouchableOpacity>
         </View>
       </View>
@@ -132,46 +86,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
   },
   leftRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-  },
-  memberPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    borderRadius: 99,
-    borderWidth: 1,
-  },
-  memberPillText: {
-    fontSize: 12,
-    fontWeight: '600',
+    gap: 14,
   },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
+    padding: 4,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
   unreadBadge: {
     position: 'absolute',
-    top: -3,
-    right: -3,
-    minWidth: 16,
-    height: 16,
+    top: -1,
+    right: -2,
+    minWidth: 15,
+    height: 15,
     borderRadius: 8,
     backgroundColor: '#E1251B',
     alignItems: 'center',
@@ -180,7 +117,7 @@ const styles = StyleSheet.create({
   },
   unreadBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: '700',
   },
 });

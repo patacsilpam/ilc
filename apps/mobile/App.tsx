@@ -255,6 +255,7 @@ export default function App() {
           unreadNotificationsCount={unreadCount}
           onOpenDrawer={() => setDrawerOpen(true)}
           onOpenInbox={() => setInboxOpen(true)}
+          onOpenSettings={() => handleSelectTab('more')}
           onPressMember={() => {
             if (reg) {
               setQrMerchantContext(undefined);

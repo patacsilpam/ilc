@@ -856,6 +856,15 @@ export const SlideOutDrawer: React.FC<SlideOutDrawerProps> = ({
         onClose();
       },
     },
+    {
+      label: 'Profile & Settings',
+      sub: 'Account details, notification toggles & theme',
+      icon: 'settings',
+      action: () => {
+        onNavigateTab('more');
+        onClose();
+      },
+    },
   ];
 
   return (
