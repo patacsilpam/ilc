@@ -13,7 +13,7 @@ interface HeaderProps {
   onPressMember?: () => void;
   onOpenDrawer: () => void;
   onOpenInbox: () => void;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,7 +21,6 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotificationsCount,
   onOpenDrawer,
   onOpenInbox,
-  onOpenSettings,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
 
@@ -59,20 +58,9 @@ export const Header: React.FC<HeaderProps> = ({
               </View>
             )}
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={onOpenSettings}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityLabel="Open settings"
-          >
-            <Feather name="settings" size={19} color={t.ink} />
-          </TouchableOpacity>
         </View>
       </View>
 
-      <BrandStripe />
     </View>
   );
 };

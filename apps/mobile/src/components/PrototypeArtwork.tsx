@@ -164,8 +164,8 @@ export const PrototypeTabIcon: React.FC<PrototypeTabIconProps> = ({ tab, color }
     home: 'play-circle',
     live: 'radio',
     rewards: 'gift',
-    travel: 'send',
-    more: 'menu',
+    travel: 'compass',
+    more: 'user',
   };
 
   return <Feather name={iconMap[tab]} size={20} color={color} />;
@@ -269,9 +269,9 @@ export const BrandStripe: React.FC = () => {
   if (Platform.OS === 'web') {
     return React.createElement('div', {
       style: {
-        height: 4,
-        borderRadius: 4,
-        background: 'linear-gradient(90deg, #09651F, #79AA34 55%, #DDE747)',
+        height: 3,
+        borderRadius: 3,
+        background: '#0B6A2E',
         margin: '14px 0 20px',
         width: '100%',
       },
@@ -280,9 +280,7 @@ export const BrandStripe: React.FC = () => {
 
   return (
     <View style={styles.stripeNative}>
-      <View style={{ flex: 2, backgroundColor: '#09651F' }} />
-      <View style={{ flex: 2, backgroundColor: '#79AA34' }} />
-      <View style={{ flex: 1.5, backgroundColor: '#DDE747' }} />
+      <View style={{ flex: 1, backgroundColor: '#0B6A2E' }} />
     </View>
   );
 };

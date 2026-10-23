@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  ScrollView,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
-  FieldLabel,
   H1,
-  H2,
-  H3,
   MuteText,
-  PromoBox,
   ProtoButton,
+  FieldLabel,
   ProtoInput,
   ProtoSelect,
 } from '../components/PrototypePrimitives';
 import {
-  HUBS,
-  MERCHANTS,
   PROTOTYPE_THEMES,
   PrototypeFeedback,
+  SERIF_FONT,
   ThemeMode,
   computeMemberId,
+  HUBS,
 } from '../constants/prototypeTheme';
 
-interface MoreScreenProps {
+interface ProfileTabScreenProps {
   theme: ThemeMode;
   onToggleTheme: () => void;
   isRegistered: boolean;
@@ -36,24 +40,116 @@ interface MoreScreenProps {
   onOpenOnboarding: () => void;
   onOpenFullscreenQr: () => void;
   onSignOut: () => void;
-  rating: number;
-  onChangeRating: (rating: number) => void;
-  hub: string;
-  onChangeHub: (hub: string) => void;
-  feedbackList: PrototypeFeedback[];
-  onSubmitFeedback: (target: string, rating: number, comment: string) => void;
-  onSimulateGeo: () => void;
-  onPushToast: (title: string, msg: string) => void;
+  rating?: number;
+  onChangeRating?: (rating: number) => void;
+  hub?: string;
+  onChangeHub?: (hub: string) => void;
+  onUpdateProfile?: (name: string, email: string, hub?: string) => void;
+  feedbackList?: PrototypeFeedback[];
+  onSubmitFeedback?: (target: string, rating: number, comment: string) => void;
+  onSimulateGeo?: () => void;
+  onPushToast?: (title: string, msg: string) => void;
 }
 
-const RATING_OPTIONS = [
-  { label: 'The ILC app', value: 'The ILC app' },
-  ...MERCHANTS.map((m) => ({ label: m.n, value: m.n })),
-];
+type FeatherName = React.ComponentProps<typeof Feather>['name'];
 
-const HUB_OPTIONS = Object.keys(HUBS).map((h) => ({ label: h, value: h }));
+/* ---------- Small building blocks ---------- */
 
-export const VodScreen: React.FC<MoreScreenProps> = ({
+const SectionLabel: React.FC<{ theme: ThemeMode; children: string }> = ({
+  theme,
+  children,
+}) => (
+  <Text style={[styles.sectionLabel, { color: PROTOTYPE_THEMES[theme].mute }]}>
+    {children}
+  </Text>
+);
+
+const Card: React.FC<{ theme: ThemeMode; children: React.ReactNode }> = ({
+  theme,
+  children,
+}) => {
+  const t = PROTOTYPE_THEMES[theme];
+  return (
+    <View
+      style={[styles.card, { backgroundColor: t.inputBg, borderColor: t.line }]}
+    >
+      {children}
+    </View>
+  );
+};
+
+interface RowProps {
+  theme: ThemeMode;
+  icon: FeatherName;
+  title: string;
+  subtitle?: string;
+  last?: boolean;
+  onPress?: () => void;
+  right?: React.ReactNode;
+}
+
+const Row: React.FC<RowProps> = ({
+  theme,
+  icon,
+  title,
+  subtitle,
+  last,
+  onPress,
+  right,
+}) => {
+  const t = PROTOTYPE_THEMES[theme];
+  const content = (
+    <View
+      style={[
+        styles.row,
+        !last && { borderBottomWidth: 1, borderBottomColor: t.line },
+      ]}
+    >
+      <Feather name={icon} size={18} color={t.mute} style={styles.rowIcon} />
+      <View style={styles.rowText}>
+        <Text style={[styles.rowTitle, { color: t.ink }]}>{title}</Text>
+        {subtitle ? (
+          <Text style={[styles.rowSub, { color: t.mute }]}>{subtitle}</Text>
+        ) : null}
+      </View>
+      <View style={styles.rowRight}>{right}</View>
+    </View>
+  );
+
+  if (!onPress) return content;
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      {content}
+    </TouchableOpacity>
+  );
+};
+
+const Switch: React.FC<{ theme: ThemeMode; on: boolean }> = ({ theme, on }) => {
+  const t = PROTOTYPE_THEMES[theme];
+  return (
+    <View
+      style={[
+        styles.switchTrack,
+        {
+          backgroundColor: on ? '#0B6A2E' : 'rgba(255,255,255,0.08)',
+          borderColor: on ? '#0B6A2E' : t.line,
+          alignItems: on ? 'flex-end' : 'flex-start',
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.switchThumb,
+          { backgroundColor: on ? '#FFFFFF' : t.mute },
+        ]}
+      />
+    </View>
+  );
+};
+
+/* ---------- Screen ---------- */
+
+export const VodScreen: React.FC<ProfileTabScreenProps> = ({
   theme,
   onToggleTheme,
   isRegistered,
@@ -68,379 +164,633 @@ export const VodScreen: React.FC<MoreScreenProps> = ({
   onOpenOnboarding,
   onOpenFullscreenQr,
   onSignOut,
-  rating,
-  onChangeRating,
   hub,
   onChangeHub,
-  feedbackList,
-  onSubmitFeedback,
-  onSimulateGeo,
-  onPushToast,
+  onUpdateProfile,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
-  const [target, setTarget] = useState('The ILC app');
-  const [comment, setComment] = useState('');
+  const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editName, setEditName] = useState(memberName);
+  const [editEmail, setEditEmail] = useState(memberEmail);
+  const [editHub, setEditHub] = useState(hub || 'Bacolod-Silay Airport');
 
-  const handleSendFeedback = () => {
-    if (!rating) {
-      onPushToast('Pick a rating', 'Tap a star before sending.');
-      return;
+  const memberId = computeMemberId(memberEmail);
+  const initials = (memberName || 'Guest')
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleOpenEditModal = () => {
+    setEditName(memberName);
+    setEditEmail(memberEmail);
+    setEditHub(hub || 'Bacolod-Silay Airport');
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = () => {
+    const trimmedName = editName.trim() || memberName;
+    const trimmedEmail = editEmail.trim() || memberEmail;
+    if (onUpdateProfile) {
+      onUpdateProfile(trimmedName, trimmedEmail, editHub);
+    } else if (onChangeHub) {
+      onChangeHub(editHub);
     }
-    onSubmitFeedback(target, rating, comment.trim() || '(no comment)');
-    setComment('');
+    setIsEditModalOpen(false);
   };
 
   return (
     <View>
-      <H1 theme={theme}>Profile & Settings</H1>
-      <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 6 }}>
-        Manage your account details, notifications, and app preferences.
-      </MuteText>
 
-      {/* Account Details Card */}
-      <PromoBox theme={theme} style={{ marginTop: 10, marginBottom: 4 }}>
-        {isRegistered ? (
-          <View>
-            <View style={styles.accountHeader}>
-              <View
-                style={[
-                  styles.avatarCircle,
-                  { backgroundColor: t.brand },
-                ]}
-              >
-                <Text style={[styles.avatarInitials, { color: t.on }]}>
-                  {(memberName || 'J')
-                    .split(' ')
-                    .map((p) => p[0])
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <H3 theme={theme}>{memberName}</H3>
-                <MuteText theme={theme}>{memberEmail}</MuteText>
-                <Text style={[styles.memberBadgeText, { color: t.brand }]}>
-                  Active Member · {computeMemberId(memberEmail)}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.accountActions}>
-              <ProtoButton
-                theme={theme}
-                label="Show QR Card"
-                onPress={onOpenFullscreenQr}
-                style={{ flex: 1 }}
-              />
-              <ProtoButton
-                theme={theme}
-                alt
-                label="Log out"
-                onPress={onSignOut}
-              />
-            </View>
-          </View>
-        ) : (
-          <View>
-            <H3 theme={theme}>Guest Traveler</H3>
-            <MuteText theme={theme} style={{ marginTop: 4, marginBottom: 10 }}>
-              Create your free account to unlock your digital membership card,
-              welcome gift, and 5% partner discount.
-            </MuteText>
-            <ProtoButton
-              theme={theme}
-              label="Create free account"
-              full
-              onPress={onOpenRegister}
-            />
-          </View>
-        )}
-      </PromoBox>
-
-      {/* Notification Toggles & Inbox */}
-      <H2 theme={theme}>Notifications</H2>
-
-      <TouchableOpacity
-        style={[styles.settingRow, { borderBottomColor: t.line }]}
-        onPress={onToggleGeoAlerts}
-        activeOpacity={0.8}
-      >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.settingTitle, { color: t.ink }]}>
-            Geo arrival alerts
-          </Text>
-          <MuteText theme={theme}>
-            Airport & ferry terminal partner discount pushes
-          </MuteText>
-        </View>
+      {/* 1. Identity header */}
+      <View style={styles.identity}>
         <View
           style={[
-            styles.toggleTrack,
-            {
-              backgroundColor: geoAlertsEnabled ? t.brand : t.inputBg,
-              borderColor: geoAlertsEnabled ? t.brand : t.line,
-            },
+            styles.avatar,
+            isRegistered
+              ? { backgroundColor: t.btnBg }
+              : { backgroundColor: t.inputBg, borderWidth: 1, borderColor: t.line },
           ]}
         >
-          <View
-            style={[
-              styles.toggleThumb,
-              {
-                backgroundColor: geoAlertsEnabled ? t.on : t.mute,
-                transform: [{ translateX: geoAlertsEnabled ? 18 : 0 }],
-              },
-            ]}
-          />
+          {isRegistered ? (
+            <Text style={[styles.avatarText, { color: '#FFFFFF' }]}>{initials}</Text>
+          ) : (
+            <Feather name="user" size={22} color={t.mute} />
+          )}
         </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.settingRow, { borderBottomColor: t.line }]}
-        onPress={onToggleAnnouncements}
-        activeOpacity={0.8}
-      >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.settingTitle, { color: t.ink }]}>
-            Announcements & premieres
+        <View style={styles.identityText}>
+          <Text
+            style={[styles.name, { color: t.ink, fontFamily: SERIF_FONT }]}
+            numberOfLines={1}
+          >
+            {isRegistered ? memberName : 'Guest traveler'}
           </Text>
-          <MuteText theme={theme}>
-            New Island Living episodes and live stream reminders
-          </MuteText>
-        </View>
-        <View
-          style={[
-            styles.toggleTrack,
-            {
-              backgroundColor: announcementsEnabled ? t.brand : t.inputBg,
-              borderColor: announcementsEnabled ? t.brand : t.line,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.toggleThumb,
-              {
-                backgroundColor: announcementsEnabled ? t.on : t.mute,
-                transform: [{ translateX: announcementsEnabled ? 18 : 0 }],
-              },
-            ]}
-          />
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.settingRow, { borderBottomColor: t.line }]}
-        onPress={onOpenInbox}
-        activeOpacity={0.8}
-      >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.settingTitle, { color: t.ink }]}>
-            Notification inbox
+          <Text style={[styles.email, { color: t.mute }]} numberOfLines={1}>
+            {isRegistered ? memberEmail : 'Not signed in'}
           </Text>
-          <MuteText theme={theme}>
-            View past geo arrival alerts and channel announcements
-          </MuteText>
         </View>
-        <Feather name="chevron-right" size={18} color={t.mute} />
-      </TouchableOpacity>
-
-      {/* Rate Your Experience Section */}
-      <H2 theme={theme}>Rate your experience</H2>
-      <FieldLabel theme={theme}>What are you rating?</FieldLabel>
-      <ProtoSelect
-        theme={theme}
-        options={RATING_OPTIONS}
-        value={target}
-        onChange={setTarget}
-      />
-
-      <View style={styles.starsRow}>
-        {[1, 2, 3, 4, 5].map((n) => {
-          const isOn = rating >= n;
-          return (
+        {isRegistered && (
+          <View style={styles.idChipGroup}>
+            <View style={[styles.idChip, { borderColor: t.line }]}>
+              <Text style={[styles.idChipText, { color: t.mute }]}>{memberId}</Text>
+            </View>
             <TouchableOpacity
-              key={n}
-              style={styles.starBtn}
-              onPress={() => onChangeRating(n)}
+              style={[
+                styles.editPillBtn,
+                { borderColor: t.line, backgroundColor: t.inputBg },
+              ]}
+              onPress={handleOpenEditModal}
               activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.starText,
-                  { color: isOn ? '#F2A65A' : t.line },
-                ]}
-              >
-                ★
-              </Text>
+              <Feather name="edit-2" size={11} color={t.ink} />
+              <Text style={[styles.editPillText, { color: t.ink }]}>Edit</Text>
             </TouchableOpacity>
-          );
-        })}
+          </View>
+        )}
       </View>
 
-      <ProtoInput
-        theme={theme}
-        value={comment}
-        onChangeText={setComment}
-        placeholder="Tell us what worked and what didn’t"
-        multiline
-        numberOfLines={3}
-      />
-
-      <ProtoButton
-        theme={theme}
-        label="Send feedback"
-        full
-        onPress={handleSendFeedback}
-      />
-
-      {feedbackList.length > 0 && (
-        <View style={{ marginTop: 14 }}>
-          {feedbackList.slice(0, 3).map((f, idx) => (
-            <View
-              key={idx}
-              style={[styles.fbRow, { borderBottomColor: t.line }]}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.settingTitle, { color: t.ink }]}>{f.w}</Text>
-                <MuteText theme={theme}>{f.t}</MuteText>
-              </View>
-              <Text style={[styles.fbStars, { color: t.hib }]}>
-                {'★'.repeat(f.r)}
-              </Text>
-            </View>
-          ))}
+      {isRegistered ? (
+        <ProtoButton
+          theme={theme}
+          label="Show member QR card"
+          full
+          onPress={onOpenFullscreenQr}
+        />
+      ) : (
+        <View>
+          <MuteText theme={theme} style={styles.guestCopy}>
+            Sign up free to get your member QR card, a welcome gift and 5% off at
+            partner cafés, restaurants and stays.
+          </MuteText>
+          <ProtoButton
+            theme={theme}
+            label="Create free account"
+            full
+            onPress={onOpenRegister}
+          />
         </View>
       )}
 
-      {/* Arrival Hub Test & App Preferences */}
-      <H2 theme={theme}>Travel gateway & app</H2>
-      <FieldLabel theme={theme}>Current arrival hub</FieldLabel>
-      <ProtoSelect
-        theme={theme}
-        options={HUB_OPTIONS}
-        value={hub}
-        onChange={onChangeHub}
-      />
+      {/* 2. Account Details */}
+      {isRegistered && (
+        <>
+          <SectionLabel theme={theme}>ACCOUNT DETAILS</SectionLabel>
+          <Card theme={theme}>
+            <Row
+              theme={theme}
+              icon="user"
+              title="Full name"
+              subtitle={memberName}
+              onPress={handleOpenEditModal}
+              right={<Feather name="edit-2" size={14} color={t.mute} />}
+            />
+            <Row
+              theme={theme}
+              icon="mail"
+              title="Email address"
+              subtitle={memberEmail}
+              onPress={handleOpenEditModal}
+              right={<Feather name="edit-2" size={14} color={t.mute} />}
+            />
+            <Row
+              theme={theme}
+              icon="map-pin"
+              title="Primary arrival hub"
+              subtitle={`${hub || 'Bacolod-Silay Airport'} · ${
+                HUBS[hub || 'Bacolod-Silay Airport'] || 'Visayas'
+              }`}
+              onPress={handleOpenEditModal}
+              right={<Feather name="edit-2" size={14} color={t.mute} />}
+            />
+            <Row
+              theme={theme}
+              icon="hash"
+              title="Member ID"
+              subtitle={`Digital Pass · ${memberId}`}
+              right={
+                <View
+                  style={[
+                    styles.badgePill,
+                    { backgroundColor: 'rgba(11,106,46,0.18)', borderColor: 'rgba(11,106,46,0.4)' },
+                  ]}
+                >
+                  <Text style={[styles.badgeText, { color: theme === 'dark' ? '#86EFAC' : '#0B6A2E' }]}>Active</Text>
+                </View>
+              }
+            />
+            <Row
+              theme={theme}
+              icon="award"
+              title="Member benefit"
+              subtitle="5% Partner Pass + Welcome Gift"
+              last
+              right={<Text style={[styles.value, { color: theme === 'dark' ? '#86EFAC' : '#0B6A2E' }]}>Phase 1</Text>}
+            />
+          </Card>
+        </>
+      )}
 
-      <ProtoButton
-        theme={theme}
-        alt
-        full
-        label="Test arrival geo alert"
-        onPress={onSimulateGeo}
-      />
+      {/* 3. Membership Perks */}
+      {isRegistered && (
+        <>
+          <SectionLabel theme={theme}>MEMBERSHIP</SectionLabel>
+          <Card theme={theme}>
+            <Row
+              theme={theme}
+              icon="percent"
+              title="Partner discount"
+              subtitle="5% off at participating merchants"
+              right={<Text style={[styles.value, { color: theme === 'dark' ? '#86EFAC' : '#0B6A2E' }]}>Active</Text>}
+            />
+            <Row
+              theme={theme}
+              icon="gift"
+              title="Welcome gift"
+              subtitle="Free coffee at a partner café"
+              last
+              right={<Text style={[styles.value, { color: theme === 'dark' ? '#86EFAC' : '#0B6A2E' }]}>Unlocked</Text>}
+            />
+          </Card>
+        </>
+      )}
 
-      <View style={[styles.settingRow, { borderBottomColor: t.line, marginTop: 10 }]}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.settingTitle, { color: t.ink }]}>Appearance</Text>
-          <MuteText theme={theme}>
-            {theme === 'dark' ? 'Dark forest theme' : 'Light island theme'}
-          </MuteText>
-        </View>
-        <ProtoButton
+      {/* 4. Notifications */}
+      <SectionLabel theme={theme}>NOTIFICATIONS</SectionLabel>
+      <Card theme={theme}>
+        <Row
           theme={theme}
-          alt
-          label={theme === 'dark' ? '☀ Light' : '☾ Dark'}
-          onPress={onToggleTheme}
+          icon="navigation"
+          title="Geo arrival alerts"
+          subtitle="Partner offers when you land"
+          onPress={onToggleGeoAlerts}
+          right={<Switch theme={theme} on={geoAlertsEnabled} />}
         />
-      </View>
+        <Row
+          theme={theme}
+          icon="radio"
+          title="Announcements"
+          subtitle="New episodes and live broadcasts"
+          onPress={onToggleAnnouncements}
+          right={<Switch theme={theme} on={announcementsEnabled} />}
+        />
+        <Row
+          theme={theme}
+          icon="bell"
+          title="Notification inbox"
+          subtitle="Past alerts and announcements"
+          last
+          onPress={onOpenInbox}
+          right={<Feather name="chevron-right" size={18} color={t.mute} />}
+        />
+      </Card>
 
-      <TouchableOpacity
-        style={[styles.settingRow, { borderBottomWidth: 0 }]}
-        onPress={onOpenOnboarding}
-        activeOpacity={0.8}
+      {/* 5. Preferences & Legal */}
+      <SectionLabel theme={theme}>LEGAL & INFO</SectionLabel>
+      <Card theme={theme}>
+        <Row
+          theme={theme}
+          icon="compass"
+          title="Welcome Tour (Airport Journey)"
+          subtitle="Replay the 3-step onboarding guide"
+          onPress={onOpenOnboarding}
+          right={<Feather name="chevron-right" size={18} color={t.mute} />}
+        />
+        <Row
+          theme={theme}
+          icon={theme === 'dark' ? 'moon' : 'sun'}
+          title="Preferences"
+          subtitle={theme === 'dark' ? 'Dark forest theme' : 'Light island theme'}
+          onPress={onToggleTheme}
+          right={<Switch theme={theme} on={theme === 'dark'} />}
+        />
+        <Row
+          theme={theme}
+          icon="shield"
+          title="Privacy Policy"
+          subtitle="How we handle your account & data"
+          onPress={() => setLegalDoc('privacy')}
+          right={<Feather name="chevron-right" size={18} color={t.mute} />}
+        />
+        <Row
+          theme={theme}
+          icon="file-text"
+          title="Terms & Conditions"
+          subtitle="Member terms and partner offers"
+          last
+          onPress={() => setLegalDoc('terms')}
+          right={<Feather name="chevron-right" size={18} color={t.mute} />}
+        />
+      </Card>
+
+      {/* 6. Log out */}
+      {isRegistered && (
+        <TouchableOpacity
+          style={[styles.logout, { borderColor: t.line }]}
+          onPress={onSignOut}
+          activeOpacity={0.7}
+        >
+          <Feather name="log-out" size={16} color={t.ink} />
+          <Text style={[styles.logoutText, { color: t.ink }]}>Log out</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Edit Profile Modal Sheet */}
+      <Modal
+        visible={isEditModalOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsEditModalOpen(false)}
       >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.settingTitle, { color: t.ink }]}>
-            Welcome tour & airport journey
-          </Text>
-          <MuteText theme={theme}>
-            Replay the 3-step Island Living onboarding guide
-          </MuteText>
+        <View style={styles.modalBackdrop}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: t.sheetBg, borderColor: t.line },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <View>
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    { color: t.ink, fontFamily: SERIF_FONT },
+                  ]}
+                >
+                  Edit Profile
+                </Text>
+                <Text style={[styles.modalSubtitle, { color: t.mute }]}>
+                  Update your member details and arrival hub
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.modalCloseBtn,
+                  { backgroundColor: t.inputBg, borderColor: t.line },
+                ]}
+                onPress={() => setIsEditModalOpen(false)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="x" size={18} color={t.ink} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalScroll}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={{ marginBottom: 14 }}>
+                <FieldLabel theme={theme}>FULL NAME</FieldLabel>
+                <ProtoInput
+                  theme={theme}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Juan dela Cruz"
+                />
+              </View>
+
+              <View style={{ marginBottom: 14 }}>
+                <FieldLabel theme={theme}>EMAIL ADDRESS</FieldLabel>
+                <ProtoInput
+                  theme={theme}
+                  value={editEmail}
+                  onChangeText={setEditEmail}
+                  placeholder="juan@example.com"
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <View style={{ marginBottom: 18 }}>
+                <FieldLabel theme={theme}>PRIMARY ARRIVAL HUB</FieldLabel>
+                <ProtoSelect
+                  theme={theme}
+                  value={editHub}
+                  onChange={setEditHub}
+                  options={Object.keys(HUBS).map((h) => ({
+                    label: `${h} (${HUBS[h]})`,
+                    value: h,
+                  }))}
+                />
+              </View>
+
+              <View style={styles.editBtnRow}>
+                <ProtoButton
+                  theme={theme}
+                  label="Cancel"
+                  alt
+                  onPress={() => setIsEditModalOpen(false)}
+                  style={{ flex: 1 }}
+                />
+                <ProtoButton
+                  theme={theme}
+                  label="Save changes"
+                  onPress={handleSaveProfile}
+                  style={{ flex: 1.4 }}
+                />
+              </View>
+            </ScrollView>
+          </View>
         </View>
-        <Feather name="compass" size={18} color={t.brand} />
-      </TouchableOpacity>
+      </Modal>
+
+      {/* Legal Document Sheet Modal */}
+      <Modal
+        visible={!!legalDoc}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setLegalDoc(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: t.sheetBg, borderColor: t.line },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text
+                style={[
+                  styles.modalTitle,
+                  { color: t.ink, fontFamily: SERIF_FONT },
+                ]}
+              >
+                {legalDoc === 'privacy' ? 'Privacy Policy' : 'Terms & Conditions'}
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.modalCloseBtn,
+                  { backgroundColor: t.inputBg, borderColor: t.line },
+                ]}
+                onPress={() => setLegalDoc(null)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="x" size={18} color={t.ink} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalScroll}
+              showsVerticalScrollIndicator={false}
+            >
+              <MuteText theme={theme} style={styles.modalBody}>
+                {legalDoc === 'privacy'
+                  ? 'Island Living Channel (ILC) respects your privacy. We collect only your name and email address to issue your digital membership card, deliver welcome gifts, and provide optional airport/seaport arrival notifications. Your QR code encodes only your non-PII member ID (ILC-XXXXX). You may disable geo alerts or delete your account at any time in Profile & Settings.'
+                  : 'By using the Island Living Channel mobile app, you agree to our Phase 1 Member Terms. Digital membership is free and entitles registered members to a welcome gift (valid within the stated expiry window) and 5% off at participating partner merchants in Bacolod, Iloilo, and Cebu upon presenting your QR card. Travel bookings are fulfilled through our partner Otamigo under their carrier and accommodation terms.'}
+              </MuteText>
+            </ScrollView>
+
+            <ProtoButton
+              theme={theme}
+              label="Close"
+              full
+              onPress={() => setLegalDoc(null)}
+              style={{ marginTop: 14 }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  accountHeader: {
+  headerSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  identity: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 14,
+    gap: 14,
+    marginTop: 14,
+    marginBottom: 18,
   },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarInitials: {
-    fontSize: 17,
+  avatarText: {
+    fontSize: 19,
     fontWeight: '700',
   },
-  memberBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
+  identityText: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 21,
+    fontWeight: '500',
+  },
+  email: {
+    fontSize: 13.5,
     marginTop: 2,
   },
-  accountActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  idChipGroup: {
+    alignItems: 'flex-end',
+    gap: 6,
   },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
+  idChip: {
+    borderWidth: 1,
+    borderRadius: 99,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
   },
-  settingTitle: {
-    fontSize: 15,
+  idChipText: {
+    fontSize: 11.5,
     fontWeight: '700',
-    marginBottom: 2,
+    letterSpacing: 0.4,
   },
-  toggleTrack: {
-    width: 46,
+  editPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderRadius: 99,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  editPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgePill: {
+    borderWidth: 1,
+    borderRadius: 99,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  guestCopy: {
+    marginBottom: 14,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 12,
+  },
+  rowIcon: {
+    width: 22,
+  },
+  rowText: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  rowSub: {
+    fontSize: 12.5,
+    marginTop: 2,
+    lineHeight: 17,
+  },
+  rowRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  value: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  switchTrack: {
+    width: 44,
     height: 26,
     borderRadius: 13,
     borderWidth: 1,
     padding: 2,
     justifyContent: 'center',
   },
-  toggleThumb: {
+  switchThumb: {
     width: 20,
     height: 20,
     borderRadius: 10,
   },
-  starsRow: {
+  logout: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+    paddingVertical: 14,
+    borderRadius: 99,
+    borderWidth: 1,
   },
-  starBtn: {
-    paddingHorizontal: 2,
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
-  starText: {
-    fontSize: 28,
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'flex-end',
   },
-  fbRow: {
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    marginBottom: 16,
   },
-  fbStars: {
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '500',
+  },
+  modalSubtitle: {
     fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalScroll: {
+    marginBottom: 10,
+  },
+  modalBody: {
+    fontSize: 14.5,
+    lineHeight: 22,
+  },
+  editBtnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 8,
   },
 });

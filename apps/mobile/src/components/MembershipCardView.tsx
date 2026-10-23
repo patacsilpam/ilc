@@ -66,7 +66,7 @@ export const MembershipCardView: React.FC<MembershipCardViewProps> = ({
               width: 140,
               height: 140,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(220,235,92,0.25) 0%, rgba(220,235,92,0) 70%)',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%)',
               pointerEvents: 'none',
             },
           })}

@@ -392,6 +392,12 @@ export default function App() {
               onChangeRating={setRating}
               hub={hub}
               onChangeHub={setHub}
+              onUpdateProfile={(newName, newEmail, newHub) => {
+                if (newName) setName(newName);
+                if (newEmail) setEmail(newEmail);
+                if (newHub) setHub(newHub);
+                pushToast('Profile updated', 'Your account details have been saved.');
+              }}
               feedbackList={fb}
               onSubmitFeedback={handleSubmitFeedback}
               onSimulateGeo={handleSimulateGeo}
@@ -540,6 +546,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrContent: {
+    paddingTop: 24,
     paddingHorizontal: 20,
     paddingBottom: 110,
   },

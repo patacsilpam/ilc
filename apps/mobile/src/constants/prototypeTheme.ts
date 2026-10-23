@@ -20,6 +20,7 @@ export interface PrototypeVideo {
   region: 'Philippines' | 'International';
   sceneIndex: number;
   videoUrl?: string;
+  imageUrl?: string;
 }
 
 export interface WatchHistoryItem {
@@ -70,6 +71,15 @@ export const VIDEO_CATEGORIES: VideoCategoryFilter[] = [
   'Festivals',
 ];
 
+export const SCENE_PHOTOS: string[] = [
+  'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80', // 0: Siquijor beach & slow island life
+  'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80', // 1: Iloilo street food & culinary
+  'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1000&q=80', // 2: Cebu ferry & island hopping
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80', // 3: Bacolod golden sunset
+  'https://images.unsplash.com/photo-1512100356356-de1b84283e18?auto=format&fit=crop&w=1000&q=80', // 4: Guimaras hidden beach
+  'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80', // 5: Mactan diving & reef
+];
+
 export const INITIAL_VIDEOS: PrototypeVideo[] = [
   {
     id: 'vid-1',
@@ -78,6 +88,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Explore',
     region: 'Philippines',
     sceneIndex: 0,
+    imageUrl:
+      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   },
@@ -88,6 +100,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Food',
     region: 'Philippines',
     sceneIndex: 1,
+    imageUrl:
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
   },
@@ -98,6 +112,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Explore',
     region: 'Philippines',
     sceneIndex: 2,
+    imageUrl:
+      'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1000&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
   },
@@ -108,6 +124,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Festivals',
     region: 'Philippines',
     sceneIndex: 3,
+    imageUrl:
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
   },
@@ -118,6 +136,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Hotels & Resorts',
     region: 'Philippines',
     sceneIndex: 4,
+    imageUrl:
+      'https://images.unsplash.com/photo-1512100356356-de1b84283e18?auto=format&fit=crop&w=1000&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
   },
@@ -128,6 +148,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Hotels & Resorts',
     region: 'Philippines',
     sceneIndex: 5,
+    imageUrl:
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
     videoUrl:
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
   },
@@ -138,6 +160,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Festivals',
     region: 'Philippines',
     sceneIndex: 3,
+    imageUrl:
+      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
   },
   {
     id: 'vid-8',
@@ -146,6 +170,8 @@ export const INITIAL_VIDEOS: PrototypeVideo[] = [
     category: 'Hotels & Resorts',
     region: 'International',
     sceneIndex: 0,
+    imageUrl:
+      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1000&q=80',
   },
 ];
 
@@ -276,7 +302,7 @@ export const TABS: [PrototypeTab, string][] = [
   ['live', 'Live TV'],
   ['rewards', 'Rewards'],
   ['travel', 'Travel'],
-  ['more', 'More'],
+  ['more', 'Profile'],
 ];
 
 export const LIVE_SCHEDULE: [string, string][] = [
@@ -309,44 +335,42 @@ export const PROTOTYPE_THEMES = {
     surf: '#0A2414',
     phoneBg: '#061A0E',
     sheetBg: '#061A0E',
-    ink: '#F2F7EC',
-    mute: '#98B39E',
-    line: 'rgba(255,255,255,0.1)',
-    brand: '#C9DC3F',
-    hib: '#C9DC3F',
-    tide: '#79AA34',
-    on: '#06240F',
-    tabsBg: 'rgba(8,36,20,0.74)',
-    tabsBorder: 'rgba(255,255,255,0.12)',
-    tabOnBg: 'rgba(201,220,63,0.16)',
-    tabOnColor: '#DCEB5C',
-    btnBg: '#C9DC3F',
-    btnGradient: 'linear-gradient(90deg,#9CC83A,#E2EA4B)',
-    btnText: '#06240F',
-    btnShadow: 'rgba(201,220,63,0.22)',
-    btnAltColor: '#DCEB5C',
-    btnAltBorder: 'rgba(201,220,63,0.55)',
-    chipOnBg: '#C9DC3F',
-    chipOnText: '#06240F',
-    promoBorder: 'rgba(201,220,63,0.4)',
-    promoBg: 'rgba(201,220,63,0.09)',
-    promoGradient:
-      'linear-gradient(160deg,rgba(201,220,63,0.14),rgba(201,220,63,0.02))',
-    inputBg: 'rgba(255,255,255,0.05)',
-    inputBorder: 'rgba(255,255,255,0.1)',
+    ink: '#F5F7F4',
+    mute: '#90A495',
+    line: 'rgba(255,255,255,0.08)',
+    brand: '#2E8B3A',
+    hib: '#2E8B3A',
+    tide: '#2E8B3A',
+    on: '#FFFFFF',
+    tabsBg: 'rgba(6,26,14,0.92)',
+    tabsBorder: 'rgba(255,255,255,0.1)',
+    tabOnBg: 'rgba(11,106,46,0.3)',
+    tabOnColor: '#FFFFFF',
+    btnBg: '#0B6A2E',
+    btnGradient: 'linear-gradient(90deg,#0B6A2E,#2E8B3A)',
+    btnText: '#FFFFFF',
+    btnShadow: 'rgba(11,106,46,0.3)',
+    btnAltColor: '#86EFAC',
+    btnAltBorder: 'rgba(134,239,172,0.4)',
+    chipOnBg: '#0B6A2E',
+    chipOnText: '#FFFFFF',
+    promoBorder: 'rgba(255,255,255,0.1)',
+    promoBg: 'rgba(255,255,255,0.04)',
+    promoGradient: 'none',
+    inputBg: 'rgba(255,255,255,0.04)',
+    inputBorder: 'rgba(255,255,255,0.08)',
     giftBg: 'rgba(255,255,255,0.03)',
     statBg: 'rgba(255,255,255,0.04)',
-    statNum: '#DCEB5C',
-    bannerBg: 'rgba(8,36,20,0.93)',
-    bannerText: '#F2F7EC',
-    bannerBorder: 'rgba(201,220,63,0.45)',
-    adminBg: 'rgba(10,29,36,0.85)',
-    adminBorder: 'rgba(255,255,255,0.1)',
+    statNum: '#86EFAC',
+    bannerBg: 'rgba(8,36,20,0.95)',
+    bannerText: '#F5F7F4',
+    bannerBorder: 'rgba(255,255,255,0.14)',
+    adminBg: 'rgba(10,29,36,0.95)',
+    adminBorder: 'rgba(255,255,255,0.08)',
     modeBg: 'rgba(255,255,255,0.05)',
-    modeOnBg: '#C9DC3F',
-    modeOnText: '#1A1405',
-    stageGradient:
-      'radial-gradient(900px 520px at 12% -10%,#0B5A2A 0,transparent 60%),radial-gradient(700px 480px at 100% 100%,#3A4A0C 0,transparent 55%),#04150B',
+    modeOnBg: '#0B6A2E',
+    modeOnText: '#FFFFFF',
+    stageGradient: '#04150B',
   },
   light: {
     bg: '#EAF2E6',
@@ -373,9 +397,9 @@ export const PROTOTYPE_THEMES = {
     chipOnBg: '#0B6A2E',
     chipOnText: '#FFFFFF',
     promoBorder: 'rgba(11,106,46,0.35)',
-    promoBg: 'rgba(201,220,63,0.18)',
+    promoBg: 'rgba(11,106,46,0.08)',
     promoGradient:
-      'linear-gradient(160deg,rgba(201,220,63,0.3),rgba(201,220,63,0.05))',
+      'linear-gradient(160deg,rgba(11,106,46,0.12),rgba(11,106,46,0.02))',
     inputBg: '#F3F7F0',
     inputBorder: 'rgba(6,36,15,0.14)',
     giftBg: '#F3F7F0',
@@ -389,8 +413,7 @@ export const PROTOTYPE_THEMES = {
     modeBg: 'rgba(255,255,255,0.7)',
     modeOnBg: '#0B6A2E',
     modeOnText: '#FFFFFF',
-    stageGradient:
-      'radial-gradient(900px 520px at 12% -10%,#CFE6B8 0,transparent 60%),radial-gradient(700px 480px at 100% 100%,#F3F0A6 0,transparent 55%),#EAF2E6',
+    stageGradient: '#EAF2E6',
   },
 } as const;
 
@@ -478,6 +501,7 @@ export const IC: Record<PrototypeTab, string> = {
   live: '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M4.9 4.9a10 10 0 000 14.2M19.1 4.9a10 10 0 010 14.2"/>',
   rewards:
     '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C9.5 8 8 7 8 5.5S9.5 3 12 8zM12 8c2.5 0 4-1 4-2.5S14.5 3 12 8z"/>',
-  travel: '<path d="M21 3L3 10.5l7 2.5 2.5 7z"/><path d="M10 13L21 3"/>',
-  more: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  travel:
+    '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
+  more: '<circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.8 3.1-6 7-6s7 2.2 7 6"/>',
 };

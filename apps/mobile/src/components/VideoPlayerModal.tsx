@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,6 @@ import {
 import { Feather } from '@expo/vector-icons';
 import {
   BrandLogo,
-  BrandStripe,
   PrototypeQrCode,
   SceneBackground,
 } from './PrototypeArtwork';
@@ -31,6 +31,7 @@ import {
   PrototypeMerchant,
   PrototypeTab,
   PrototypeVideo,
+  SCENE_PHOTOS,
   SERIF_FONT,
   ThemeMode,
   VideoCategoryFilter,
@@ -78,6 +79,10 @@ export const PlayerSheet: React.FC<PlayerSheetProps> = ({
     onClose();
   };
 
+  const photoUri =
+    video.imageUrl ||
+    SCENE_PHOTOS[(((video.sceneIndex ?? index) % SCENE_PHOTOS.length) + SCENE_PHOTOS.length) % SCENE_PHOTOS.length];
+
   return (
     <View style={[styles.sheet, { backgroundColor: t.sheetBg }]}>
       <View
@@ -87,21 +92,38 @@ export const PlayerSheet: React.FC<PlayerSheetProps> = ({
             ({ boxShadow: '0 20px 40px rgba(0,0,0,0.4)' } as any),
         ]}
       >
-        <SceneBackground index={video.sceneIndex ?? index} style={{ flex: 1 }}>
-          <View style={styles.liveCenter}>
-            <TouchableOpacity
-              style={[
-                styles.playCircle,
-                Platform.OS === 'web' &&
-                  ({ backdropFilter: 'blur(8px)' } as any),
-              ]}
-              onPress={() => setPlaying(!playing)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.playText}>{playing ? '❚❚' : '▶'}</Text>
-            </TouchableOpacity>
-          </View>
-        </SceneBackground>
+        <Image
+          source={{ uri: photoUri }}
+          style={StyleSheet.absoluteFillObject}
+          resizeMode="cover"
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor: 'rgba(5, 20, 12, 0.4)',
+              ...(Platform.OS === 'web'
+                ? {
+                    backgroundImage:
+                      'linear-gradient(180deg, rgba(0,0,0,0.2) 20%, rgba(4,16,10,0.85) 100%)',
+                  }
+                : {}),
+            },
+          ]}
+        />
+        <View style={styles.liveCenter}>
+          <TouchableOpacity
+            style={[
+              styles.playCircle,
+              Platform.OS === 'web' &&
+                ({ backdropFilter: 'blur(8px)' } as any),
+            ]}
+            onPress={() => setPlaying(!playing)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.playText}>{playing ? '❚❚' : '▶'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={[styles.bar, { backgroundColor: t.line }]}>
@@ -220,26 +242,29 @@ const ONBOARDING_STEPS = [
   {
     number: '01',
     label: 'Watch',
-    scene: 0,
-    caption: 'Bacolod · Iloilo · Cebu · Boracay',
+    imageUrl:
+      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1000&q=85',
+    pills: ['Bacolod', 'Iloilo', 'Cebu', 'Boracay'],
     title: 'Stories from the islands, wherever you land.',
     subtitle:
-      'From airport arrival gates to your hotel room—stream original Philippine travel films, food trails, and our 24/7 live channel.',
+      'From airport arrival gates to your hotel room, stream original Philippine travel films, food trails and our 24/7 live channel.',
   },
   {
     number: '02',
     label: 'Rewards',
-    scene: 4,
-    caption: 'Digital Member Card',
+    imageUrl:
+      'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1000&q=85',
+    pills: ['5% Off', 'Free Coffee', 'Partner QR'],
     title: 'One card for island cafés, dining & stays.',
     subtitle:
-      'Members receive a complimentary welcome coffee and 5% off at partner restaurants, cafés, and resorts—just show your QR code.',
+      'Members receive a complimentary welcome coffee and 5% off at partner restaurants, cafés, and resorts, just show your QR code.',
   },
   {
     number: '03',
     label: 'Book',
-    scene: 2,
-    caption: 'In partnership with Otamigo',
+    imageUrl:
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85',
+    pills: ['Flights', 'Ferries', 'Resorts'],
     title: 'Plan flights, ferries, and coastal stays.',
     subtitle:
       'Search inter-island flights, fastcraft schedules, and curated hotels in one place, with member perks applied.',
@@ -283,20 +308,30 @@ export const OnboardingSheet: React.FC<OnboardingSheetProps> = ({
       >
         {!isSignUpStep ? (
           <View style={styles.onboardSlideContainer}>
-            {/* Uncluttered Editorial Artwork */}
-            <SceneBackground
-              index={currentSlide.scene}
-              overlayGradient="hero"
-              style={styles.onboardHero}
-            >
-              <Text style={styles.onboardHeroCaption}>
-                {currentSlide.number} — {currentSlide.label} ·{' '}
-                {currentSlide.caption}
-              </Text>
-            </SceneBackground>
+            {/* Hero Image with Top-Right Play Circle & Bottom Pill Chips */}
+            <View style={styles.onboardHero}>
+              <Image
+                source={{ uri: currentSlide.imageUrl }}
+                style={styles.onboardHeroImage}
+                resizeMode="cover"
+              />
+              <View style={styles.onboardPlayCircle}>
+                <Text style={styles.onboardPlayTriangle}>▶</Text>
+              </View>
+              <View style={styles.onboardPillsRow}>
+                {currentSlide.pills.map((pill) => (
+                  <View key={pill} style={styles.onboardImagePill}>
+                    <Text style={styles.onboardImagePillText}>{pill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
 
-            {/* Editorial Headline & Calm Body Copy */}
+            {/* Step Eyebrow, Serif Headline & Body Copy */}
             <View style={styles.onboardTextSection}>
+              <Text style={[styles.onboardMetaStep, { color: t.brand }]}>
+                {currentSlide.number} / 03 · {currentSlide.label.toUpperCase()}
+              </Text>
               <Text
                 style={[
                   styles.onboardMainTitle,
@@ -722,7 +757,7 @@ export const NotificationInboxSheet: React.FC<NotificationInboxSheetProps> = ({
               styles.notifIconCircle,
               {
                 backgroundColor:
-                  item.type === 'geo' ? 'rgba(201,220,63,0.2)' : 'rgba(121,170,52,0.2)',
+                  item.type === 'geo' ? 'rgba(74,222,128,0.18)' : 'rgba(46,139,58,0.2)',
               },
             ]}
           >
@@ -772,11 +807,8 @@ export const SlideOutDrawer: React.FC<SlideOutDrawerProps> = ({
   onClose,
   onNavigateCategory,
   onNavigateTab,
-  onOpenInbox,
-  onOpenOnboarding,
 }) => {
   const t = PROTOTYPE_THEMES[theme];
-  const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
 
   const MENU_SECTIONS: {
     label: string;
@@ -787,7 +819,7 @@ export const SlideOutDrawer: React.FC<SlideOutDrawerProps> = ({
     {
       label: 'Philippines',
       sub: 'Archipelago documentaries & island guides',
-      icon: 'compass',
+      icon: 'map-pin',
       action: () => {
         onNavigateCategory('Philippines');
         onClose();
@@ -850,16 +882,16 @@ export const SlideOutDrawer: React.FC<SlideOutDrawerProps> = ({
     {
       label: 'Otamigo Travel',
       sub: 'Book flights, ferries & island stays',
-      icon: 'send',
+      icon: 'compass',
       action: () => {
         onNavigateTab('travel');
         onClose();
       },
     },
     {
-      label: 'Profile & Settings',
-      sub: 'Account details, notification toggles & theme',
-      icon: 'settings',
+      label: 'Profile',
+      sub: 'Account details, member pass & preferences',
+      icon: 'user',
       action: () => {
         onNavigateTab('more');
         onClose();
@@ -897,121 +929,36 @@ export const SlideOutDrawer: React.FC<SlideOutDrawerProps> = ({
           </TouchableOpacity>
         </View>
 
-        <BrandStripe />
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <Text style={[styles.drawerSectionHeader, { color: t.mute }]}>
+            EXPLORE ISLAND LIVING
+          </Text>
 
-        {legalDoc ? (
-          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {MENU_SECTIONS.map((item) => (
             <TouchableOpacity
-              style={[
-                styles.backBtn,
-                { borderColor: t.line, backgroundColor: t.inputBg },
-              ]}
-              onPress={() => setLegalDoc(null)}
+              key={item.label}
+              style={[styles.drawerItem, { borderBottomColor: t.line }]}
+              onPress={item.action}
+              activeOpacity={0.7}
             >
-              <Feather name="arrow-left" size={15} color={t.ink} />
-              <Text style={[styles.backBtnText, { color: t.ink }]}>
-                Back to menu
-              </Text>
+              <Feather
+                name={item.icon}
+                size={18}
+                color={t.mute}
+                style={styles.drawerIcon}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.drawerItemTitle, { color: t.ink }]}>
+                  {item.label}
+                </Text>
+                <Text style={[styles.drawerItemSub, { color: t.mute }]}>
+                  {item.sub}
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={15} color={t.mute} />
             </TouchableOpacity>
-
-            <H2 theme={theme} style={{ marginTop: 6 }}>
-              {legalDoc === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
-            </H2>
-            <MuteText theme={theme} style={{ lineHeight: 20 }}>
-              {legalDoc === 'privacy'
-                ? 'Island Living Channel (ILC) respects your privacy. We collect only your name and email address to issue your digital membership card, deliver welcome gifts, and provide optional airport/seaport arrival notifications. Your QR code encodes only your non-PII member ID (ILC-XXXXX). You may disable geo alerts or delete your account at any time in Profile & Settings.'
-                : 'By using the Island Living Channel mobile app, you agree to our Phase 1 Member Terms. Digital membership is free and entitles registered members to a welcome gift (valid within the stated expiry window) and 5% off at participating partner merchants in Bacolod, Iloilo, and Cebu upon presenting your QR card. Travel bookings are fulfilled through our partner Otamigo under their carrier and accommodation terms.'}
-            </MuteText>
-          </ScrollView>
-        ) : (
-          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-            <Text style={[styles.drawerSectionHeader, { color: t.mute }]}>
-              EXPLORE ISLAND LIVING
-            </Text>
-
-            {MENU_SECTIONS.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={[styles.drawerItem, { borderBottomColor: t.line }]}
-                onPress={item.action}
-                activeOpacity={0.75}
-              >
-                <View
-                  style={[
-                    styles.drawerIconWrap,
-                    { backgroundColor: t.inputBg },
-                  ]}
-                >
-                  <Feather name={item.icon} size={16} color={t.brand} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.drawerItemTitle, { color: t.ink }]}>
-                    {item.label}
-                  </Text>
-                  <Text style={[styles.drawerItemSub, { color: t.mute }]}>
-                    {item.sub}
-                  </Text>
-                </View>
-                <Feather name="chevron-right" size={15} color={t.mute} />
-              </TouchableOpacity>
-            ))}
-
-            <Text
-              style={[
-                styles.drawerSectionHeader,
-                { color: t.mute, marginTop: 18 },
-              ]}
-            >
-              LEGAL & INFO
-            </Text>
-
-            <TouchableOpacity
-              style={[styles.drawerLegalRow, { borderBottomColor: t.line }]}
-              onPress={() => {
-                onOpenOnboarding();
-                onClose();
-              }}
-            >
-              <Feather name="compass" size={14} color={t.mute} />
-              <Text style={[styles.drawerLegalText, { color: t.ink }]}>
-                Welcome Tour (Airport Journey)
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.drawerLegalRow, { borderBottomColor: t.line }]}
-              onPress={() => {
-                onOpenInbox();
-                onClose();
-              }}
-            >
-              <Feather name="bell" size={14} color={t.mute} />
-              <Text style={[styles.drawerLegalText, { color: t.ink }]}>
-                Notification Inbox
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.drawerLegalRow, { borderBottomColor: t.line }]}
-              onPress={() => setLegalDoc('privacy')}
-            >
-              <Feather name="shield" size={14} color={t.mute} />
-              <Text style={[styles.drawerLegalText, { color: t.ink }]}>
-                Privacy Policy
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.drawerLegalRow, { borderBottomWidth: 0 }]}
-              onPress={() => setLegalDoc('terms')}
-            >
-              <Feather name="file-text" size={14} color={t.mute} />
-              <Text style={[styles.drawerLegalText, { color: t.ink }]}>
-                Terms & Conditions
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        )}
+          ))}
+        </ScrollView>
       </View>
     </View>
   );
@@ -1129,16 +1076,58 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   onboardHero: {
-    minHeight: 290,
-    borderRadius: 24,
-    padding: 20,
-    justifyContent: 'flex-end',
+    height: 280,
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    justifyContent: 'space-between',
+    padding: 14,
+    backgroundColor: '#0A2414',
   },
-  onboardHeroCaption: {
-    color: 'rgba(255,255,255,0.86)',
-    fontSize: 12.5,
-    fontWeight: '500',
-    letterSpacing: 0.3,
+  onboardHeroImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  onboardPlayCircle: {
+    alignSelf: 'flex-end',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(10, 28, 16, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onboardPlayTriangle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    marginLeft: 2,
+  },
+  onboardPillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  onboardImagePill: {
+    backgroundColor: 'rgba(10, 28, 16, 0.78)',
+    paddingVertical: 6,
+    paddingHorizontal: 13,
+    borderRadius: 99,
+  },
+  onboardImagePillText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  onboardMetaStep: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 10,
   },
   onboardBadge: {
     alignSelf: 'flex-start',
@@ -1148,7 +1137,7 @@ const styles = StyleSheet.create({
     borderRadius: 99,
   },
   onboardBadgeText: {
-    color: '#F3E600',
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -1160,7 +1149,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   onboardTextSection: {
-    marginTop: 26,
+    marginTop: 18,
   },
   onboardEyebrow: {
     fontSize: 12.5,
@@ -1284,18 +1273,18 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: '#0A2414',
     borderWidth: 1,
-    borderColor: 'rgba(201,220,63,0.55)',
+    borderColor: 'rgba(74,222,128,0.35)',
     alignItems: 'center',
   },
   qrDiscountPill: {
-    backgroundColor: 'rgba(201,220,63,0.18)',
+    backgroundColor: 'rgba(74,222,128,0.15)',
     paddingVertical: 5,
     paddingHorizontal: 14,
     borderRadius: 99,
     marginBottom: 8,
   },
   qrDiscountPillText: {
-    color: '#C9DC3F',
+    color: '#4ADE80',
     fontSize: 11.5,
     fontWeight: '700',
     letterSpacing: 0.6,
@@ -1318,7 +1307,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   qrMemberId: {
-    color: '#C9DC3F',
+    color: '#4ADE80',
     fontSize: 15,
     fontWeight: '700',
     letterSpacing: 1,
@@ -1334,7 +1323,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#C9DC3F',
+    backgroundColor: '#4ADE80',
   },
   qrVerifiedText: {
     color: '#98B39E',
@@ -1424,6 +1413,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 16,
   },
   drawerCloseBtn: {
     width: 32,
@@ -1442,23 +1432,22 @@ const styles = StyleSheet.create({
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 11,
+    gap: 14,
+    paddingVertical: 13,
     borderBottomWidth: 1,
   },
-  drawerIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+  drawerIcon: {
+    width: 22,
+    textAlign: 'center',
   },
   drawerItemTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
   },
   drawerItemSub: {
-    fontSize: 11.5,
+    fontSize: 12,
+    marginTop: 2,
+    lineHeight: 16,
   },
   drawerLegalRow: {
     flexDirection: 'row',

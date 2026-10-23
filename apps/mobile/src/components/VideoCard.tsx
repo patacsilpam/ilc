@@ -2,14 +2,15 @@ import React from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   StyleSheet,
   Platform,
 } from 'react-native';
-import { SceneBackground } from './PrototypeArtwork';
 import {
   PROTOTYPE_THEMES,
   PrototypeVideo,
+  SCENE_PHOTOS,
   SERIF_FONT,
   ThemeMode,
 } from '../constants/prototypeTheme';
@@ -35,6 +36,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({
 }) => {
   const t = PROTOTYPE_THEMES[theme];
   const sceneIdx = video.sceneIndex !== undefined ? video.sceneIndex : index;
+  const photoUri =
+    video.imageUrl ||
+    SCENE_PHOTOS[((sceneIdx % SCENE_PHOTOS.length) + SCENE_PHOTOS.length) % SCENE_PHOTOS.length];
 
   if (layout === 'hero') {
     return (
@@ -47,11 +51,16 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         onPress={onPress}
         activeOpacity={0.9}
       >
-        <SceneBackground
-          index={sceneIdx}
-          overlayGradient="hero"
-          style={styles.heroScene}
-        >
+        <View style={styles.heroScene}>
+          <Image
+            source={{ uri: photoUri }}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
+          <View style={styles.heroOverlayGradient} />
+          <View style={styles.heroPlayCircle}>
+            <Text style={styles.heroPlayTriangle}>▶</Text>
+          </View>
           <View style={styles.heroInner}>
             <View style={styles.heroBadgeRow}>
               <View
@@ -78,7 +87,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             </Text>
             <Text style={styles.heroSub}>{video.m} · tap to watch</Text>
           </View>
-        </SceneBackground>
+        </View>
       </TouchableOpacity>
     );
   }
@@ -90,11 +99,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         onPress={onPress}
         activeOpacity={0.85}
       >
-        <SceneBackground
-          index={sceneIdx}
-          overlayGradient="thumb"
-          style={styles.continueThumb}
-        >
+        <View style={styles.continueThumb}>
+          <Image
+            source={{ uri: photoUri }}
+            style={styles.thumbImage}
+            resizeMode="cover"
+          />
+          <View style={styles.thumbOverlayGradient} />
           <View style={styles.continuePlayCircle}>
             <Text style={styles.continuePlayIcon}>▶</Text>
           </View>
@@ -117,7 +128,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
               ]}
             />
           </View>
-        </SceneBackground>
+        </View>
         <Text
           style={[styles.vidTitle, { color: t.ink }]}
           numberOfLines={2}
@@ -134,11 +145,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <SceneBackground
-        index={sceneIdx}
-        overlayGradient="thumb"
-        style={styles.thumb}
-      >
+      <View style={styles.thumb}>
+        <Image
+          source={{ uri: photoUri }}
+          style={styles.thumbImage}
+          resizeMode="cover"
+        />
+        <View style={styles.thumbOverlayGradient} />
         <View
           style={[
             styles.categoryMicroPill,
@@ -157,7 +170,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         >
           <Text style={styles.durationText}>{video.m}</Text>
         </View>
-      </SceneBackground>
+      </View>
       <Text style={[styles.vidTitle, { color: t.ink }]}>{video.t}</Text>
     </TouchableOpacity>
   );
@@ -165,18 +178,61 @@ export const VideoCard: React.FC<VideoCardProps> = ({
 
 const styles = StyleSheet.create({
   heroTouch: {
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     minHeight: 280,
+    backgroundColor: '#0A2414',
   },
   heroScene: {
     minHeight: 280,
-    borderRadius: 28,
-    padding: 22,
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    padding: 20,
+    justifyContent: 'flex-end',
+  },
+  heroImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlayGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(5, 20, 12, 0.45)',
+    ...(Platform.OS === 'web'
+      ? {
+          backgroundImage:
+            'linear-gradient(180deg, rgba(0,0,0,0.12) 15%, rgba(4,16,10,0.92) 100%)',
+        }
+      : {}),
+  },
+  heroPlayCircle: {
+    position: 'absolute',
+    top: 18,
+    right: 18,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(10, 28, 16, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  heroPlayTriangle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginLeft: 2,
   },
   heroInner: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    zIndex: 2,
     gap: 6,
   },
   heroBadgeRow: {
@@ -191,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 99,
   },
   heroTagText: {
-    color: '#F3E600',
+    color: '#FFFFFF',
     fontSize: 11.5,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -229,15 +285,40 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#0A2414',
+  },
+  thumbImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  thumbOverlayGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    ...(Platform.OS === 'web'
+      ? {
+          backgroundImage:
+            'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.72) 100%)',
+        }
+      : {}),
   },
   categoryMicroPill: {
     position: 'absolute',
     left: 6,
     top: 6,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     paddingVertical: 2,
     paddingHorizontal: 7,
     borderRadius: 6,
+    zIndex: 2,
   },
   categoryMicroText: {
     color: '#FFFFFF',
@@ -248,10 +329,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 6,
     bottom: 8,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
     paddingVertical: 1,
     paddingHorizontal: 6,
     borderRadius: 6,
+    zIndex: 2,
   },
   durationText: {
     color: '#FFFFFF',
@@ -273,6 +355,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#0A2414',
   },
   continuePlayCircle: {
     position: 'absolute',
@@ -283,11 +366,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.7)',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 2,
   },
   continuePlayIcon: {
     color: '#FFFFFF',
@@ -301,6 +385,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.25)',
+    zIndex: 2,
   },
   continueBarFill: {
     height: '100%',

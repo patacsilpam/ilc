@@ -4,11 +4,11 @@ export const BRAND_COLORS = {
   oceanSurface: '#0A2414',   // Dark card surface (#0A2414)
   islandTeal: '#0B6A2E',     // Brand emerald green (#0B6A2E)
   tealLight: '#EAF2E6',      // Light mode sage canvas (#EAF2E6)
-  skyBlue: '#79AA34',        // Tide leaf green (#79AA34)
-  warmSand: '#C9DC3F',       // Signature lime-chartreuse brand accent (#C9DC3F)
-  goldDark: '#9CC83A',       // Button gradient start (#9CC83A)
+  skyBlue: '#2E8B3A',        // Tide leaf green (#2E8B3A)
+  warmSand: '#0B6A2E',       // Brand palm green (#0B6A2E)
+  goldDark: '#0B6A2E',       // Button background (#0B6A2E)
   passportCream: '#F3F7F0',  // Light surface tint (#F3F7F0)
-  passportBorder: '#DCEB5C', // Lime highlight (#DCEB5C)
+  passportBorder: '#2E8B3A', // Green highlight (#2E8B3A)
   coralAccent: '#E1251B',    // Live TV red badge (#E1251B)
   warmIvory: '#EAF2E6',      // Light background (#EAF2E6)
   surface: '#FFFFFF',        // Light phone surface (#FFFFFF)
@@ -26,15 +26,15 @@ export const BRAND_COLORS = {
   palmLight: '#EAF2E6',
   channelRed: '#E1251B',
   channelRedLight: '#FEE2E2',
-  sunGold: '#C9DC3F',
-  sunGoldBright: '#E2EA4B',
+  sunGold: '#0B6A2E',
+  sunGoldBright: '#2E8B3A',
   sunTint: '#F3F7F0',
 
   // Status colors
   success: '#2E8B3A',
   warning: '#F2A65A',
   error: '#E1251B',
-  info: '#79AA34',
+  info: '#2E8B3A',
 } as const;
 
 export const DEFAULT_BRAND_LOGO = 'https://www.islandlivingchannel.tv/wp-content/uploads/2022/02/ff.png';
